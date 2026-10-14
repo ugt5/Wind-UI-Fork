@@ -18,6 +18,7 @@ type Dynamic3DOptions__DARKLUA_TYPE_a={
 MaxTiltAngle:number?,
 Responsiveness:number?,
 Distance:number?,
+ExitDuration:number?,
 }
 
 type ConfigType__DARKLUA_TYPE_b={
@@ -26229,201 +26230,258 @@ end)
 
 local d=b(game:GetService"RunService")
 local e=b(game:GetService"UserInputService")
-local f=b(game:GetService"Players")
-local g=b(game:GetService"CoreGui")
-local h=b(game:GetService"Workspace")
+local f=b(game:GetService"TweenService")
+local g=b(game:GetService"Players")
+local h=b(game:GetService"CoreGui")
+local i=b(game:GetService"Workspace")
 
-local i=f.LocalPlayer
-local l=protectgui or(syn and syn.protect_gui)or function()end
-local m=gethui and gethui()or(g or(i and i:WaitForChild"PlayerGui"))
-
-
-
-
-
-
-
-local p={}
-p.__index=p
-
-
-local r:{[GuiObject]:any}={}
+local l=g.LocalPlayer
+local m=protectgui or(syn and syn.protect_gui)or function()end
+local p=gethui and gethui()or(h or(l and l:WaitForChild"PlayerGui"))
 
 
 
 
 
 
-function p.Set(u:GuiObject,v:boolean,x:Dynamic3DOptions__DARKLUA_TYPE_a?)
-if not u or typeof(u)~="Instance"or not u:IsA"GuiObject"then
-warn("[WindUI:Dynamic3D] Invalid menuFrame provided. Expected GuiObject, got: "..typeof(u))
+
+
+local r={}
+r.__index=r
+
+
+local u:{[GuiObject]:any}={}
+
+local function cleanupSession(v,x)
+if v.Connection then
+v.Connection:Disconnect()
+v.Connection=nil
+end
+
+if v.AncestryConnection then
+v.AncestryConnection:Disconnect()
+v.AncestryConnection=nil
+end
+
+
+if v.OriginalParent and v.OriginalParent.Parent then
+x.Parent=v.OriginalParent
+end
+
+if v.SurfaceGui then
+v.SurfaceGui:Destroy()
+v.SurfaceGui=nil
+end
+
+if v.Part then
+v.Part:Destroy()
+v.Part=nil
+end
+
+if u[x]==v then
+u[x]=nil
+end
+end
+
+
+
+
+
+
+
+function r.Set(v:GuiObject,x:boolean,z:Dynamic3DOptions__DARKLUA_TYPE_a?,A:boolean?)
+if not v or typeof(v)~="Instance"or not v:IsA"GuiObject"then
+warn("[WindUI:Dynamic3D] Invalid menuFrame provided. Expected GuiObject, got: "..typeof(v))
 return
 end
 
 
-if not v then
-local z=r[u]
-if not z then
+if not x then
+local B=u[v]
+if not B then
 return
 end
 
-if z.Connection then
-z.Connection:Disconnect()
-z.Connection=nil
+if A then
+cleanupSession(B,v)
+return
 end
 
-if z.AncestryConnection then
-z.AncestryConnection:Disconnect()
-z.AncestryConnection=nil
+if B.Exiting then
+return
 end
 
-
-if z.OriginalParent and z.OriginalParent.Parent then
-u.Parent=z.OriginalParent
-end
-
-if z.SurfaceGui then
-z.SurfaceGui:Destroy()
-z.SurfaceGui=nil
-end
-
-if z.Part then
-z.Part:Destroy()
-z.Part=nil
-end
-
-r[u]=nil
+B.Exiting=true
+B.ExitElapsed=0
+B.ExitDuration=(z and z.ExitDuration)or 0.35
+B.StartExitRotX=B.CurrentRotX or 0
+B.StartExitRotY=B.CurrentRotY or 0
 return
 end
 
 
-if r[u]then
-return r[u]
+local B=u[v]
+if B then
+if B.Exiting then
+B.Exiting=false
+B.ExitElapsed=nil
+B.StartExitRotX=nil
+B.StartExitRotY=nil
+end
+return B
 end
 
-x=x or{}
-local z=x.MaxTiltAngle or 8
-local A=math.rad(z)
-local B=x.Responsiveness or 12
-local C=x.Distance or 2
+z=z or{}
+local C=z.MaxTiltAngle or 8
+local F=math.rad(C)
+local G=z.Responsiveness or 12
+local H=z.Distance or 2
 
-local F=u.Parent
-local G=h.CurrentCamera
-
-
-local H=Instance.new"Part"
-H.Name="WindUI_3DPart"
-H.Transparency=1
-H.CanCollide=false
-H.CanTouch=false
-H.CanQuery=true
-H.CastShadow=false
-H.Anchored=true
-H.Material=Enum.Material.SmoothPlastic
-H.Parent=G
+local J=v.Parent
+local L=i.CurrentCamera
 
 
-local J=Instance.new"SurfaceGui"
-J.Name="WindUI_3DSurface"
-J.Face=Enum.NormalId.Back
-J.AlwaysOnTop=true
-J.LightInfluence=0
-J.Active=true
-J.ClipsDescendants=false
-J.ResetOnSpawn=false
-J.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
-J.SizingMode=Enum.SurfaceGuiSizingMode.FixedSize
-J.Adornee=H
-J.Parent=m
-l(J)
+local M=Instance.new"Part"
+M.Name="WindUI_3DPart"
+M.Transparency=1
+M.CanCollide=false
+M.CanTouch=false
+M.CanQuery=true
+M.CastShadow=false
+M.Anchored=true
+M.Material=Enum.Material.SmoothPlastic
+M.Parent=L
 
 
-u.Parent=J
+local N=Instance.new"SurfaceGui"
+N.Name="WindUI_3DSurface"
+N.Face=Enum.NormalId.Back
+N.AlwaysOnTop=true
+N.LightInfluence=0
+N.Active=true
+N.ClipsDescendants=false
+N.ResetOnSpawn=false
+N.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+N.SizingMode=Enum.SurfaceGuiSizingMode.FixedSize
+N.Adornee=M
+N.Parent=p
+m(N)
 
-local L=0
-local M=0
 
-local N
-N=d.RenderStepped:Connect(function(O:number)
-local P=h.CurrentCamera
-if not P or not H or not H.Parent then
+v.Parent=N
+
+local O=0
+local P=0
+
+local Q
+Q={
+Part=M,
+SurfaceGui=N,
+Connection=nil,
+AncestryConnection=nil,
+OriginalParent=J,
+CurrentRotX=0,
+CurrentRotY=0,
+Exiting=false,
+}
+u[v]=Q
+
+local R
+R=d.RenderStepped:Connect(function(S:number)
+local T=i.CurrentCamera
+if not T or not M or not M.Parent then
 return
 end
 
-if H.Parent~=P then
-H.Parent=P
+if M.Parent~=T then
+M.Parent=T
 end
 
-local Q=P.ViewportSize
-if Q.X<=0 or Q.Y<=0 then
+local U=T.ViewportSize
+if U.X<=0 or U.Y<=0 then
 return
 end
 
 
-if J.CanvasSize~=Q then
-J.CanvasSize=Q
+if N.CanvasSize~=U then
+N.CanvasSize=U
 end
 
 
-local R=math.rad(P.FieldOfView)
-local S=2*C*math.tan(R/2)
-local T=S*(Q.X/Q.Y)
-H.Size=Vector3.new(T,S,0.001)
+local V=math.rad(T.FieldOfView)
+local W=2*H*math.tan(V/2)
+local X=W*(U.X/U.Y)
+M.Size=Vector3.new(X,W,0.001)
 
 
-local U=P.CFrame*CFrame.new(0,0,-C)
+local Y=T.CFrame*CFrame.new(0,0,-H)
+
+if Q.Exiting then
+Q.ExitElapsed=Q.ExitElapsed+S
+local _=math.clamp(Q.ExitElapsed/Q.ExitDuration,0,1)
+local aa=f:GetValue(_,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+
+O=Q.StartExitRotX*(1-aa)
+P=Q.StartExitRotY*(1-aa)
+Q.CurrentRotX=O
+Q.CurrentRotY=P
+
+M.CFrame=Y*CFrame.Angles(O,P,0)
+
+if _>=1 then
+cleanupSession(Q,v)
+end
+return
+end
 
 
-local V=e:GetMouseLocation()
-local W=Q.X/2
-local X=Q.Y/2
+local aa=e:GetMouseLocation()
+local _=U.X/2
+local ab=U.Y/2
 
-local Y=math.clamp((V.X-W)/(W>0 and W or 1),-1,1)
-local _=math.clamp((X-V.Y)/(X>0 and X or 1),-1,1)
-
-
+local ac=math.clamp((aa.X-_)/(_>0 and _ or 1),-1,1)
+local ad=math.clamp((ab-aa.Y)/(ab>0 and ab or 1),-1,1)
 
 
-local aa=Y*A
-local ab=-_*A
 
 
-local ac=math.clamp(O*B,0,1)
-L=L+(ab-L)*ac
-M=M+(aa-M)*ac
+local ae=ac*F
+local af=-ad*F
 
 
-H.CFrame=U*CFrame.Angles(L,M,0)
+local ag=math.clamp(S*G,0,1)
+O=O+(af-O)*ag
+P=P+(ae-P)*ag
+Q.CurrentRotX=O
+Q.CurrentRotY=P
+
+
+M.CFrame=Y*CFrame.Angles(O,P,0)
 end)
+
+Q.Connection=R
 
 
 local aa
-aa=u.AncestryChanged:Connect(function(ab,ac)
-if ac==nil and r[u]then
-p.Set(u,false)
+aa=v.AncestryChanged:Connect(function(ab,ac)
+if ac==nil and u[v]then
+r.Set(v,false,nil,true)
 end
 end)
 
-local ab={
-Part=H,
-SurfaceGui=J,
-Connection=N,
-AncestryConnection=aa,
-OriginalParent=F,
-}
-r[u]=ab
+Q.AncestryConnection=aa
 
-return ab
+return Q
 end
 
 
-setmetatable(p,{
-__call=function(aa,ab:GuiObject,ac:boolean,u:Dynamic3DOptions__DARKLUA_TYPE_a?)
-return p.Set(ab,ac,u)
+setmetatable(r,{
+__call=function(aa,ab:GuiObject,ac:boolean,ad:Dynamic3DOptions__DARKLUA_TYPE_a?,ae:boolean?)
+return r.Set(ab,ac,ad,ae)
 end,
 })
 
-return p end function a.n()
+return r end function a.n()
 
 
 
@@ -26436,33 +26494,33 @@ return p end function a.n()
 
 
 
-local aa=4294967296;local ab=aa-1;local function c(ac,b)local d,e=0,1;while ac~=0 or b~=0 do local f,g=ac%2,b%2;local h=(f+g)%2;d=d+h*e;ac=math.floor(ac/2)b=math.floor(b/2)e=e*2 end;return d%aa end;local function k(ac,b,d,...)local e;if b then ac=ac%aa;b=b%aa;e=c(ac,b)if d then e=k(e,d,...)end;return e elseif ac then return ac%aa else return 0 end end;local function n(ac,b,d,...)local e;if b then ac=ac%aa;b=b%aa;e=(ac+b-c(ac,b))/2;if d then e=n(e,d,...)end;return e elseif ac then return ac%aa else return ab end end;local function o(ac)return ab-ac end;local function q(ac,b)if b<0 then return lshift(ac,-b)end;return math.floor(ac%4294967296/2^b)end;local function s(ac,b)if b>31 or b<-31 then return 0 end;return q(ac%aa,b)end;local function lshift(ac,b)if b<0 then return s(ac,-b)end;return ac*2^b%4294967296 end;local function t(ac,b)ac=ac%aa;b=b%32;local d=n(ac,2^b-1)return s(ac,b)+lshift(d,32-b)end;local ac={0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2}local function w(b)return string.gsub(b,".",function(d)return string.format("%02x",string.byte(d))end)end;local function y(b,d)local e=""for f=1,d do local g=b%256;e=string.char(g)..e;b=(b-g)/256 end;return e end;local function D(b,d)local e=0;for f=d,d+3 do e=e*256+string.byte(b,f)end;return e end;local function E(b,d)local e=64-(d+9)%64;d=y(8*d,8)b=b.."\128"..string.rep("\0",e)..d;assert(#b%64==0)return b end;local function I(b)b[1]=0x6a09e667;b[2]=0xbb67ae85;b[3]=0x3c6ef372;b[4]=0xa54ff53a;b[5]=0x510e527f;b[6]=0x9b05688c;b[7]=0x1f83d9ab;b[8]=0x5be0cd19;return b end;local function K(b,d,e)local f={}for g=1,16 do f[g]=D(b,d+(g-1)*4)end;for g=17,64 do local h=f[g-15]local i=k(t(h,7),t(h,18),s(h,3))h=f[g-2]f[g]=(f[g-16]+i+f[g-7]+k(t(h,17),t(h,19),s(h,10)))%aa end;local g,h,i,l,m,p,r,u=e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8]for v=1,64 do local x=k(t(g,2),t(g,13),t(g,22))local z=k(n(g,h),n(g,i),n(h,i))local A=(x+z)%aa;local B=k(t(m,6),t(m,11),t(m,25))local C=k(n(m,p),n(o(m),r))local F=(u+B+C+ac[v]+f[v])%aa;u=r;r=p;p=m;m=(l+F)%aa;l=i;i=h;h=g;g=(F+A)%aa end;e[1]=(e[1]+g)%aa;e[2]=(e[2]+h)%aa;e[3]=(e[3]+i)%aa;e[4]=(e[4]+l)%aa;e[5]=(e[5]+m)%aa;e[6]=(e[6]+p)%aa;e[7]=(e[7]+r)%aa;e[8]=(e[8]+u)%aa end;local function Z(b)b=E(b,#b)local d=I{}for e=1,#b,64 do K(b,e,d)end;return w(y(d[1],4)..y(d[2],4)..y(d[3],4)..y(d[4],4)..y(d[5],4)..y(d[6],4)..y(d[7],4)..y(d[8],4))end;local b;local d={["\\"]="\\",["\""]="\"",["\b"]="b",["\f"]="f",["\n"]="n",["\r"]="r",["\t"]="t"}local e={["/"]="/"}for f,g in pairs(d)do e[g]=f end;local f=function(f)return"\\"..(d[f]or string.format("u%04x",f:byte()))end;local g=function(g)return"null"end;local h=function(h,i)local l={}i=i or{}if i[h]then error"circular reference"end;i[h]=true;if rawget(h,1)~=nil or next(h)==nil then local m=0;for p in pairs(h)do if type(p)~="number"then error"invalid table: mixed or invalid key types"end;m=m+1 end;if m~=#h then error"invalid table: sparse array"end;for p,r in ipairs(h)do table.insert(l,b(r,i))end;i[h]=nil;return"["..table.concat(l,",").."]"else for m,p in pairs(h)do if type(m)~="string"then error"invalid table: mixed or invalid key types"end;table.insert(l,b(m,i)..":"..b(p,i))end;i[h]=nil;return"{"..table.concat(l,",").."}"end end;local i=function(i)return'"'..i:gsub('[%z\1-\31\\"]',f)..'"'end;local l=function(l)if l~=l or l<=-math.huge or l>=math.huge then error("unexpected number value '"..tostring(l).."'")end;return string.format("%.14g",l)end;local m={["nil"]=g,table=h,string=i,number=l,boolean=tostring}b=function(p,r)local u=type(p)local v=m[u]if v then return v(p,r)end;error("unexpected type '"..u.."'")end;local p=function(p)return b(p)end;local r;local u=function(...)local u={}for v=1,select("#",...)do u[select(v,...)]=true end;return u end;local v=u(" ","\t","\r","\n")local x=u(" ","\t","\r","\n","]","}",",")local z=u("\\","/",'"',"b","f","n","r","t","u")local A=u("true","false","null")local B={["true"]=true,["false"]=false,null=nil}local C=function(C,F,G,H)for J=F,#C do if G[C:sub(J,J)]~=H then return J end end;return#C+1 end;local F=function(F,G,H)local J=1;local L=1;for M=1,G-1 do L=L+1;if F:sub(M,M)=="\n"then J=J+1;L=1 end end;error(string.format("%s at line %d col %d",H,J,L))end;local G=function(G)local H=math.floor;if G<=0x7f then return string.char(G)elseif G<=0x7ff then return string.char(H(G/64)+192,G%64+128)elseif G<=0xffff then return string.char(H(G/4096)+224,H(G%4096/64)+128,G%64+128)elseif G<=0x10ffff then return string.char(H(G/262144)+240,H(G%262144/4096)+128,H(G%4096/64)+128,G%64+128)end;error(string.format("invalid unicode codepoint '%x'",G))end;local H=function(H)local J=tonumber(H:sub(1,4),16)local L=tonumber(H:sub(7,10),16)if L then return G((J-0xd800)*0x400+L-0xdc00+0x10000)else return G(J)end end;local J=function(J,L)local M=""local N=L+1;local O=N;while N<=#J do local P=J:byte(N)if P<32 then F(J,N,"control character in string")elseif P==92 then M=M..J:sub(O,N-1)N=N+1;local Q=J:sub(N,N)if Q=="u"then local R=J:match("^[dD][89aAbB]%x%x\\u%x%x%x%x",N+1)or J:match("^%x%x%x%x",N+1)or F(J,N-1,"invalid unicode escape in string")M=M..H(R)N=N+#R else if not z[Q]then F(J,N-1,"invalid escape char '"..Q.."' in string")end;M=M..e[Q]end;O=N+1 elseif P==34 then M=M..J:sub(O,N-1)return M,N+1 end;N=N+1 end;F(J,L,"expected closing quote for string")end;local L=function(L,M)local N=C(L,M,x)local O=L:sub(M,N-1)local P=tonumber(O)if not P then F(L,M,"invalid number '"..O.."'")end;return P,N end;local M=function(M,N)local O=C(M,N,x)local P=M:sub(N,O-1)if not A[P]then F(M,N,"invalid literal '"..P.."'")end;return B[P],O end;local N=function(N,O)local P={}local Q=1;O=O+1;while 1 do local R;O=C(N,O,v,true)if N:sub(O,O)=="]"then O=O+1;break end;R,O=r(N,O)P[Q]=R;Q=Q+1;O=C(N,O,v,true)local S=N:sub(O,O)O=O+1;if S=="]"then break end;if S~=","then F(N,O,"expected ']' or ','")end end;return P,O end;local O=function(O,P)local Q={}P=P+1;while 1 do local R,S;P=C(O,P,v,true)if O:sub(P,P)=="}"then P=P+1;break end;if O:sub(P,P)~='"'then F(O,P,"expected string for key")end;R,P=r(O,P)P=C(O,P,v,true)if O:sub(P,P)~=":"then F(O,P,"expected ':' after key")end;P=C(O,P+1,v,true)S,P=r(O,P)Q[R]=S;P=C(O,P,v,true)local T=O:sub(P,P)P=P+1;if T=="}"then break end;if T~=","then F(O,P,"expected '}' or ','")end end;return Q,P end;local P={['"']=J,["0"]=L,["1"]=L,["2"]=L,["3"]=L,["4"]=L,["5"]=L,["6"]=L,["7"]=L,["8"]=L,["9"]=L,["-"]=L,t=M,f=M,n=M,["["]=N,["{"]=O}r=function(Q,R)local S=Q:sub(R,R)local T=P[S]if T then return T(Q,R)end;F(Q,R,"unexpected character '"..S.."'")end;local Q=function(Q)if type(Q)~="string"then error("expected argument of type string, got "..type(Q))end;local R,S=r(Q,C(Q,1,v,true))S=C(Q,S,v,true)if S<=#Q then F(Q,S,"trailing garbage")end;return R end;
-local R,S,T=p,Q,Z;
+local aa=4294967296;local ab=aa-1;local function c(ac,ad)local ae,af=0,1;while ac~=0 or ad~=0 do local ag,b=ac%2,ad%2;local d=(ag+b)%2;ae=ae+d*af;ac=math.floor(ac/2)ad=math.floor(ad/2)af=af*2 end;return ae%aa end;local function k(ac,ad,ae,...)local af;if ad then ac=ac%aa;ad=ad%aa;af=c(ac,ad)if ae then af=k(af,ae,...)end;return af elseif ac then return ac%aa else return 0 end end;local function n(ac,ad,ae,...)local af;if ad then ac=ac%aa;ad=ad%aa;af=(ac+ad-c(ac,ad))/2;if ae then af=n(af,ae,...)end;return af elseif ac then return ac%aa else return ab end end;local function o(ac)return ab-ac end;local function q(ac,ad)if ad<0 then return lshift(ac,-ad)end;return math.floor(ac%4294967296/2^ad)end;local function s(ac,ad)if ad>31 or ad<-31 then return 0 end;return q(ac%aa,ad)end;local function lshift(ac,ad)if ad<0 then return s(ac,-ad)end;return ac*2^ad%4294967296 end;local function t(ac,ad)ac=ac%aa;ad=ad%32;local ae=n(ac,2^ad-1)return s(ac,ad)+lshift(ae,32-ad)end;local ac={0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2}local function w(ad)return string.gsub(ad,".",function(ae)return string.format("%02x",string.byte(ae))end)end;local function y(ad,ae)local af=""for ag=1,ae do local b=ad%256;af=string.char(b)..af;ad=(ad-b)/256 end;return af end;local function D(ad,ae)local af=0;for ag=ae,ae+3 do af=af*256+string.byte(ad,ag)end;return af end;local function E(ad,ae)local af=64-(ae+9)%64;ae=y(8*ae,8)ad=ad.."\128"..string.rep("\0",af)..ae;assert(#ad%64==0)return ad end;local function I(ad)ad[1]=0x6a09e667;ad[2]=0xbb67ae85;ad[3]=0x3c6ef372;ad[4]=0xa54ff53a;ad[5]=0x510e527f;ad[6]=0x9b05688c;ad[7]=0x1f83d9ab;ad[8]=0x5be0cd19;return ad end;local function K(ad,ae,af)local ag={}for b=1,16 do ag[b]=D(ad,ae+(b-1)*4)end;for b=17,64 do local d=ag[b-15]local e=k(t(d,7),t(d,18),s(d,3))d=ag[b-2]ag[b]=(ag[b-16]+e+ag[b-7]+k(t(d,17),t(d,19),s(d,10)))%aa end;local b,d,e,f,g,h,i,l=af[1],af[2],af[3],af[4],af[5],af[6],af[7],af[8]for m=1,64 do local p=k(t(b,2),t(b,13),t(b,22))local r=k(n(b,d),n(b,e),n(d,e))local u=(p+r)%aa;local v=k(t(g,6),t(g,11),t(g,25))local x=k(n(g,h),n(o(g),i))local z=(l+v+x+ac[m]+ag[m])%aa;l=i;i=h;h=g;g=(f+z)%aa;f=e;e=d;d=b;b=(z+u)%aa end;af[1]=(af[1]+b)%aa;af[2]=(af[2]+d)%aa;af[3]=(af[3]+e)%aa;af[4]=(af[4]+f)%aa;af[5]=(af[5]+g)%aa;af[6]=(af[6]+h)%aa;af[7]=(af[7]+i)%aa;af[8]=(af[8]+l)%aa end;local function Z(ad)ad=E(ad,#ad)local ae=I{}for af=1,#ad,64 do K(ad,af,ae)end;return w(y(ae[1],4)..y(ae[2],4)..y(ae[3],4)..y(ae[4],4)..y(ae[5],4)..y(ae[6],4)..y(ae[7],4)..y(ae[8],4))end;local ad;local ae={["\\"]="\\",["\""]="\"",["\b"]="b",["\f"]="f",["\n"]="n",["\r"]="r",["\t"]="t"}local af={["/"]="/"}for ag,b in pairs(ae)do af[b]=ag end;local ag=function(ag)return"\\"..(ae[ag]or string.format("u%04x",ag:byte()))end;local b=function(b)return"null"end;local d=function(d,e)local f={}e=e or{}if e[d]then error"circular reference"end;e[d]=true;if rawget(d,1)~=nil or next(d)==nil then local g=0;for h in pairs(d)do if type(h)~="number"then error"invalid table: mixed or invalid key types"end;g=g+1 end;if g~=#d then error"invalid table: sparse array"end;for h,i in ipairs(d)do table.insert(f,ad(i,e))end;e[d]=nil;return"["..table.concat(f,",").."]"else for g,h in pairs(d)do if type(g)~="string"then error"invalid table: mixed or invalid key types"end;table.insert(f,ad(g,e)..":"..ad(h,e))end;e[d]=nil;return"{"..table.concat(f,",").."}"end end;local e=function(e)return'"'..e:gsub('[%z\1-\31\\"]',ag)..'"'end;local f=function(f)if f~=f or f<=-math.huge or f>=math.huge then error("unexpected number value '"..tostring(f).."'")end;return string.format("%.14g",f)end;local g={["nil"]=b,table=d,string=e,number=f,boolean=tostring}ad=function(h,i)local l=type(h)local m=g[l]if m then return m(h,i)end;error("unexpected type '"..l.."'")end;local h=function(h)return ad(h)end;local i;local l=function(...)local l={}for m=1,select("#",...)do l[select(m,...)]=true end;return l end;local m=l(" ","\t","\r","\n")local p=l(" ","\t","\r","\n","]","}",",")local r=l("\\","/",'"',"b","f","n","r","t","u")local u=l("true","false","null")local v={["true"]=true,["false"]=false,null=nil}local x=function(x,z,A,B)for C=z,#x do if A[x:sub(C,C)]~=B then return C end end;return#x+1 end;local z=function(z,A,B)local C=1;local F=1;for G=1,A-1 do F=F+1;if z:sub(G,G)=="\n"then C=C+1;F=1 end end;error(string.format("%s at line %d col %d",B,C,F))end;local A=function(A)local B=math.floor;if A<=0x7f then return string.char(A)elseif A<=0x7ff then return string.char(B(A/64)+192,A%64+128)elseif A<=0xffff then return string.char(B(A/4096)+224,B(A%4096/64)+128,A%64+128)elseif A<=0x10ffff then return string.char(B(A/262144)+240,B(A%262144/4096)+128,B(A%4096/64)+128,A%64+128)end;error(string.format("invalid unicode codepoint '%x'",A))end;local B=function(B)local C=tonumber(B:sub(1,4),16)local F=tonumber(B:sub(7,10),16)if F then return A((C-0xd800)*0x400+F-0xdc00+0x10000)else return A(C)end end;local C=function(C,F)local G=""local H=F+1;local J=H;while H<=#C do local L=C:byte(H)if L<32 then z(C,H,"control character in string")elseif L==92 then G=G..C:sub(J,H-1)H=H+1;local M=C:sub(H,H)if M=="u"then local N=C:match("^[dD][89aAbB]%x%x\\u%x%x%x%x",H+1)or C:match("^%x%x%x%x",H+1)or z(C,H-1,"invalid unicode escape in string")G=G..B(N)H=H+#N else if not r[M]then z(C,H-1,"invalid escape char '"..M.."' in string")end;G=G..af[M]end;J=H+1 elseif L==34 then G=G..C:sub(J,H-1)return G,H+1 end;H=H+1 end;z(C,F,"expected closing quote for string")end;local F=function(F,G)local H=x(F,G,p)local J=F:sub(G,H-1)local L=tonumber(J)if not L then z(F,G,"invalid number '"..J.."'")end;return L,H end;local G=function(G,H)local J=x(G,H,p)local L=G:sub(H,J-1)if not u[L]then z(G,H,"invalid literal '"..L.."'")end;return v[L],J end;local H=function(H,J)local L={}local M=1;J=J+1;while 1 do local N;J=x(H,J,m,true)if H:sub(J,J)=="]"then J=J+1;break end;N,J=i(H,J)L[M]=N;M=M+1;J=x(H,J,m,true)local O=H:sub(J,J)J=J+1;if O=="]"then break end;if O~=","then z(H,J,"expected ']' or ','")end end;return L,J end;local J=function(J,L)local M={}L=L+1;while 1 do local N,O;L=x(J,L,m,true)if J:sub(L,L)=="}"then L=L+1;break end;if J:sub(L,L)~='"'then z(J,L,"expected string for key")end;N,L=i(J,L)L=x(J,L,m,true)if J:sub(L,L)~=":"then z(J,L,"expected ':' after key")end;L=x(J,L+1,m,true)O,L=i(J,L)M[N]=O;L=x(J,L,m,true)local P=J:sub(L,L)L=L+1;if P=="}"then break end;if P~=","then z(J,L,"expected '}' or ','")end end;return M,L end;local L={['"']=C,["0"]=F,["1"]=F,["2"]=F,["3"]=F,["4"]=F,["5"]=F,["6"]=F,["7"]=F,["8"]=F,["9"]=F,["-"]=F,t=G,f=G,n=G,["["]=H,["{"]=J}i=function(M,N)local O=M:sub(N,N)local P=L[O]if P then return P(M,N)end;z(M,N,"unexpected character '"..O.."'")end;local M=function(M)if type(M)~="string"then error("expected argument of type string, got "..type(M))end;local N,O=i(M,x(M,1,m,true))O=x(M,O,m,true)if O<=#M then z(M,O,"trailing garbage")end;return N end;
+local N,O,P=h,M,Z;
 
 
 
 
 
-local U={}
+local Q={}
 
-local V=(cloneref or clonereference or function(V)return V end)
-
-
-function U.New(W,X)
-
-local Y=W;
-local _=X;
-local ad=true;
+local R=(cloneref or clonereference or function(R)return R end)
 
 
-local ae=function(ae)end;
+function Q.New(S,T)
+
+local U=S;
+local V=T;
+local W=true;
+
+
+local X=function(X)end;
 
 
 repeat task.wait(1)until game:IsLoaded();
 
 
-local af=false;
-local ag,ah,ai,aj,ak,al,am,an,ao=setclipboard or toclipboard,request or http_request or syn_request,string.char,tostring,string.sub,os.time,math.random,math.floor,gethwid or function()return V(game:GetService"Players").LocalPlayer.UserId end
+local Y=false;
+local _,ah,ai,aj,ak,al,am,an,ao=setclipboard or toclipboard,request or http_request or syn_request,string.char,tostring,string.sub,os.time,math.random,math.floor,gethwid or function()return R(game:GetService"Players").LocalPlayer.UserId end
 local ap,aq="",0;
 
 
@@ -26481,9 +26539,9 @@ if aq+(600)<al()then
 local at=ah{
 Url=ar.."/public/start",
 Method="POST",
-Body=R{
-service=Y,
-identifier=T(ao())
+Body=N{
+service=U,
+identifier=P(ao())
 },
 Headers={
 ["Content-Type"]="application/json",
@@ -26492,24 +26550,24 @@ Headers={
 };
 
 if at.StatusCode==200 then
-local au=S(at.Body);
+local au=O(at.Body);
 
 if au.success==true then
 ap=au.data.url;
 aq=al();
 return true,ap
 else
-ae(au.message);
+X(au.message);
 return false,au.message
 end
 elseif at.StatusCode==429 then
 local au="you are being rate limited, please wait 20 seconds and try again.";
-ae(au);
+X(au);
 return false,au
 end
 
 local au="Failed to cache link.";
-ae(au);
+X(au);
 return false,au
 else
 return true,ap
@@ -26533,7 +26591,7 @@ local av=at();
 task.wait(0.2)
 if at()==av then
 local aw="platoboost nonce error.";
-ae(aw);
+X(aw);
 error(aw);
 end
 end
@@ -26543,82 +26601,82 @@ local au=function()
 local au,av=cacheLink();
 
 if au then
-ag(av);
+_(av);
 end
 end
 
 
 local av=function(av)
 local aw=at();
-local ax=ar.."/public/redeem/"..aj(Y);
+local ax=ar.."/public/redeem/"..aj(U);
 
 local ay={
-identifier=T(ao()),
+identifier=P(ao()),
 key=av
 }
 
-if ad then
+if W then
 ay.nonce=aw;
 end
 
 local az=ah{
 Url=ax,
 Method="POST",
-Body=R(ay),
+Body=N(ay),
 Headers={
 ["Content-Type"]="application/json"
 }
 };
 
 if az.StatusCode==200 then
-local aA=S(az.Body);
+local aA=O(az.Body);
 
 if aA.success==true then
 if aA.data.valid==true then
-if ad then
-if aA.data.hash==T("true".."-"..aw.."-".._)then
+if W then
+if aA.data.hash==P("true".."-"..aw.."-"..V)then
 return true
 else
-ae"failed to verify integrity.";
+X"failed to verify integrity.";
 return false
 end
 else
 return true
 end
 else
-ae"key is invalid.";
+X"key is invalid.";
 return false
 end
 else
 if ak(aA.message,1,27)=="unique constraint violation"then
-ae"you already have an active key, please wait for it to expire before redeeming it.";
+X"you already have an active key, please wait for it to expire before redeeming it.";
 return false
 else
-ae(aA.message);
+X(aA.message);
 return false
 end
 end
 elseif az.StatusCode==429 then
-ae"you are being rate limited, please wait 20 seconds and try again.";
+X"you are being rate limited, please wait 20 seconds and try again.";
 return false
 else
-ae"server returned an invalid status code, please try again later.";
+X"server returned an invalid status code, please try again later.";
 return false
 end
 end
 
 
 local aw=function(aw)
-if af==true then
+if Y==true then
 return false,("A request is already being sent, please slow down.")
 else
-af=true;
+Y=true;
 end
 
 local ax=at();
-local ay=ar.."/public/whitelist/"..aj(Y).."?identifier="..T(ao()).."&key="..aw;
+local ay=ar.."/public/whitelist/"..aj(U).."?identifier="..P(ao()).."&key="..aw;
 
-if ad then
+if W then
 ay=ay.."&nonce="..ax;
 end
 
@@ -26627,15 +26685,15 @@ Url=ay,
 Method="GET",
 };
 
-af=false;
+Y=false;
 
 if az.StatusCode==200 then
-local aA=S(az.Body);
+local aA=O(az.Body);
 
 if aA.success==true then
 if aA.data.valid==true then
-if ad then
-if aA.data.hash==T("true".."-"..ax.."-".._)then
+if W then
+if aA.data.hash==P("true".."-"..ax.."-"..V)then
 return true,""
 else
 return false,("failed to verify integrity.")
@@ -26663,9 +26721,9 @@ end
 
 local ax=function(ax)
 local ay=at();
-local az=ar.."/public/flag/"..aj(Y).."?name="..ax;
+local az=ar.."/public/flag/"..aj(U).."?name="..ax;
 
-if ad then
+if W then
 az=az.."&nonce="..ay;
 end
 
@@ -26675,21 +26733,21 @@ Method="GET",
 };
 
 if aA.StatusCode==200 then
-local aB=S(aA.Body);
+local aB=O(aA.Body);
 
 if aB.success==true then
-if ad then
-if aB.data.hash==T(aj(aB.data.value).."-"..ay.."-".._)then
+if W then
+if aB.data.hash==P(aj(aB.data.value).."-"..ay.."-"..V)then
 return aB.data.value
 else
-ae"failed to verify integrity.";
+X"failed to verify integrity.";
 return nil
 end
 else
 return aB.data.value
 end
 else
-ae(aB.message);
+X(aB.message);
 return nil
 end
 else
@@ -26706,7 +26764,7 @@ Copy=au,
 end
 
 
-return U end function a.o()
+return Q end function a.o()
 
 
 
@@ -37517,7 +37575,7 @@ Topbar=ax.Topbar or{Height=52,ButtonsType="Default"},
 Size=ax.Size,
 
 MinSize=ax.MinSize or Vector2.new(560,350),
-MaxSize=ax.MaxSize or Vector2.new(850,560),
+MaxSize=ax.MaxSize or Vector2.new(math.huge,math.huge),
 
 TopBarButtonIconSize=ax.TopBarButtonIconSize,
 
@@ -39003,7 +39061,7 @@ return H
 end
 function ay.Destroy(G)
 if ay.Dynamic3DRender then
-ay:Toggle3D(false)
+ay:Toggle3D(false,true)
 end
 return ay:Close():Destroy()
 end
@@ -39015,7 +39073,7 @@ ay:Close()
 end
 end
 
-function ay.Toggle3D(G,H)
+function ay.Toggle3D(G,H,J)
 if H==nil then
 H=not ay.Dynamic3DRender
 end
@@ -39023,7 +39081,7 @@ ay.Dynamic3DRender=H
 return aw.Set(ay.UIElements.Main,H,{
 MaxTiltAngle=ax.Dynamic3DTilt or 8,
 Responsiveness=ax.Dynamic3DSmoothness or 12,
-})
+},J)
 end
 
 function ay.ToggleTransparency(G,H)
@@ -39957,8 +40015,8 @@ end
 end
 end
 
-function aa.SetDynamic3D(aA,aB,b,d)
-return aa.Dynamic3D.Set(aB,b,d)
+function aa.SetDynamic3D(aA,aB,b,d,e)
+return aa.Dynamic3D.Set(aB,b,d,e)
 end
 
 function aa.Gradient(aA,aB,b)
