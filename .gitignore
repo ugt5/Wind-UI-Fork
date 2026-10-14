@@ -29,3 +29,6 @@ build/.init.lua
 *.njsproj
 *.sln
 *.sw?
+
+# AI / Workspace rules
+GEMINI.md
