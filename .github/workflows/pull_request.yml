@@ -52,7 +52,7 @@ jobs:
                   [ -f build.log ] && tail -c 5000 build.log > pr-result/build.log || true
 
                   USING_MAIN=false
-                  if [ -f main_example.lua ] && grep -qF "loadstring(game:HttpGet('https://raw.githubusercontent.com/Footagesus/WindUI/refs/heads/main/main.client.lua'))()" main_example.lua; then
+                  if [ -f main_example.lua ] && grep -qF "loadstring(game:HttpGet('https://raw.githubusercontent.com/ugt5/Wind-UI-Fork/refs/heads/main/main.client.lua'))()" main_example.lua; then
                     USING_MAIN=true
                   fi
                   echo "$USING_MAIN" > pr-result/using_main_client

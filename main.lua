@@ -151,7 +151,7 @@ local Window = WindUI:CreateWindow({
     -- KeySystem = { -- 
     --     -- Key = { "1234", "5678" },  
     --     Note = "Example Key System. With platoboost, etc.",
-    --     -- URL = "https://github.com/Footagesus/WindUI",
+    --     -- URL = "https://github.com/ugt5/Wind-UI-Fork",
     --     -- Thumbnail = {
     --     --     Image = "rbxassetid://",
     --     --     Title = "Thumbnail",
@@ -704,7 +704,7 @@ end
 local footerSection = Window:Section({ Title = "WindUI " .. WindUI.Version })
 Tabs.Config:Paragraph({
     Title = "Github Repository",
-    Desc = "github.com/Footagesus/WindUI",
+    Desc = "github.com/ugt5/Wind-UI-Fork",
     Image = "github",
     ImageSize = 20,
     Color = "Grey",
@@ -714,7 +714,7 @@ Tabs.Config:Paragraph({
             Icon = "copy",
             Variant = "Tertiary",
             Callback = function()
-                setclipboard("https://github.com/Footagesus/WindUI")
+                setclipboard("https://github.com/ugt5/Wind-UI-Fork")
                 WindUI:Notify({
                     Title = "Copied!",
                     Content = "GitHub link copied to clipboard",
