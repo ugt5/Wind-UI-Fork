@@ -83,6 +83,11 @@ local Window = WindUI:CreateWindow({
 	HideSearchBar = false,
 	Dynamic3DRender = false, -- Enables 3D cursor tilt effect (true/false)
 
+	User = {
+		Enabled = true,
+		Anonymous = false,
+	},
+
 	OpenButton = {
 		Title = "Open .ftgs hub UI", -- can be changed
 		CornerRadius = UDim.new(1, 0), -- fully rounded
@@ -101,6 +106,21 @@ local Window = WindUI:CreateWindow({
 		Height = 44,
 		ButtonsType = "Mac", -- Default or Mac
 	},
+})
+
+Window.Topbar:Button({
+	Name = "Help",
+	Icon = "solar:question-circle-bold",
+	LayoutOrder = 1,
+	IconThemed = true,
+	Callback = function()
+		WindUI:Notify({
+			Title = "WindUI Fork",
+			Content = "Window can be resized infinitely using the bottom-right corner grip!",
+			Icon = "solar:info-circle-bold",
+			Duration = 4,
+		})
+	end,
 })
 
 --createPopup()
@@ -878,6 +898,369 @@ do
 	DropdownTab:Space()
 end
 
+-- */  ProgressBar Tab  /* --
+do
+	local ProgressBarTab = ElementsSection:Tab({
+		Title = "ProgressBar",
+		Icon = "solar:chart-2-bold",
+		IconColor = Yellow,
+		IconShape = "Square",
+		Border = true,
+	})
+
+	local MainProgressBar = ProgressBarTab:ProgressBar({
+		Title = "Interactive Progress",
+		Desc = "Use the buttons below to change progress",
+		Value = {
+			Min = 0,
+			Max = 100,
+			Default = 45,
+		},
+		DisplayMode = "Percent",
+		Width = 160,
+	})
+
+	ProgressBarTab:Space()
+
+	local ControlsRow = ProgressBarTab:HStack({
+		AutoSpace = false,
+	})
+
+	ControlsRow:Button({
+		Title = "- 15%",
+		Justify = "Center",
+		Callback = function()
+			local current = MainProgressBar:Get()
+			MainProgressBar:Set(math.clamp(current - 15, 0, 100))
+		end,
+	})
+
+	ControlsRow:Button({
+		Title = "+ 15%",
+		Justify = "Center",
+		Callback = function()
+			local current = MainProgressBar:Get()
+			MainProgressBar:Set(math.clamp(current + 15, 0, 100))
+		end,
+	})
+
+	ControlsRow:Button({
+		Title = "Reset",
+		Justify = "Center",
+		Callback = function()
+			MainProgressBar:Set(0)
+		end,
+	})
+
+	ControlsRow:Button({
+		Title = "100%",
+		Justify = "Center",
+		Callback = function()
+			MainProgressBar:Set(100)
+		end,
+	})
+
+	ProgressBarTab:Space()
+
+	ProgressBarTab:ProgressBar({
+		Title = "Fraction Display Mode",
+		Desc = "Displays progress as fraction (e.g. 6/10)",
+		Value = {
+			Min = 0,
+			Max = 10,
+			Default = 6,
+		},
+		DisplayMode = "Fraction",
+		Width = 160,
+	})
+
+	ProgressBarTab:Space()
+
+	ProgressBarTab:ProgressBar({
+		Title = "Compiling Assets",
+		Desc = "Continuous indeterminate loading animation",
+		Indeterminate = true,
+		IndeterminateText = "Loading...",
+		Speed = 1,
+		Width = 160,
+	})
+
+	ProgressBarTab:Space()
+end
+
+-- */  Code Tab  /* --
+do
+	local CodeTab = ElementsSection:Tab({
+		Title = "Code",
+		Icon = "solar:code-bold",
+		IconColor = Blue,
+		IconShape = "Square",
+		Border = true,
+	})
+
+	local sampleSnippet1 = '-- WindUI Quickstart\nlocal WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/ugt5/Wind-UI-Fork/main/dist/main.lua"))()\n\nlocal Window = WindUI:CreateWindow({\n    Title = "Script Hub",\n    Icon = "solar:star-bold",\n    Theme = "Dark",\n})\n\nlocal Tab = Window:Tab({ Title = "Main", Icon = "home" })\nTab:Button({\n    Title = "Click Me",\n    Callback = function()\n        print("Clicked!")\n    end,\n})'
+
+	local sampleSnippet2 = '-- Dynamic 3D Render & Smooth Transitions\nWindow:Toggle3D(true) -- Enables 3D cursor tilt\n\ntask.wait(3)\n\nWindow:Toggle3D(false) -- Smoothly returns to flat 2D'
+
+	local CodeViewer = CodeTab:Code({
+		Title = "Luau Script Preview",
+		Code = sampleSnippet1,
+		CodeSize = 15,
+		CanCopied = true,
+		OnCopy = function()
+			WindUI:Notify({
+				Title = "Code Copied",
+				Content = "Snippet copied to clipboard!",
+				Icon = "solar:copy-bold",
+				Duration = 3,
+			})
+		end,
+	})
+
+	CodeTab:Space()
+
+	local CodeButtonsRow = CodeTab:HStack({
+		AutoSpace = false,
+	})
+
+	CodeButtonsRow:Button({
+		Title = "Quickstart Snippet",
+		Justify = "Center",
+		Callback = function()
+			CodeViewer:SetCode(sampleSnippet1)
+		end,
+	})
+
+	CodeButtonsRow:Button({
+		Title = "Dynamic 3D Snippet",
+		Justify = "Center",
+		Callback = function()
+			CodeViewer:SetCode(sampleSnippet2)
+		end,
+	})
+
+	CodeTab:Space()
+end
+
+-- */  Viewport Tab  /* --
+do
+	local ViewportTab = ElementsSection:Tab({
+		Title = "Viewport 3D",
+		Icon = "solar:box-minimalistic-bold",
+		IconColor = Purple,
+		IconShape = "Square",
+		Border = true,
+	})
+
+	local previewPart = Instance.new("Part")
+	previewPart.Name = "WindUI_PreviewBlock"
+	previewPart.Size = Vector3.new(2, 2, 2)
+	previewPart.Color = Color3.fromHex("#7775F2")
+	previewPart.Material = Enum.Material.Neon
+	previewPart.CFrame = CFrame.new(0, 0, 0)
+
+	ViewportTab:Paragraph({
+		Title = "Interactive 3D Viewport",
+		Desc = "Click and drag to rotate the camera around the object. Scroll to zoom in and out.",
+		Image = "solar:cursor-square-bold",
+		ImageSize = 20,
+	})
+
+	ViewportTab:Space()
+
+	ViewportTab:Viewport({
+		Object = previewPart,
+		Height = 180,
+		Interactive = true,
+		Focused = true,
+	})
+
+	ViewportTab:Space()
+end
+
+-- */  Layouts Tab  /* --
+do
+	local LayoutsTab = ElementsSection:Tab({
+		Title = "Layouts & Stacks",
+		Icon = "solar:layers-minimalistic-bold",
+		IconColor = Grey,
+		IconShape = "Square",
+		Border = true,
+	})
+
+	LayoutsTab:Paragraph({
+		Title = "HStack & Divider",
+		Desc = "HStack distributes child elements horizontally with automatic width calculation.",
+	})
+
+	LayoutsTab:Space()
+
+	local TwoColStack = LayoutsTab:HStack({
+		AutoSpace = false,
+	})
+
+	TwoColStack:Button({
+		Title = "Confirm Action",
+		Color = Green,
+		Justify = "Center",
+		Callback = function()
+			WindUI:Notify({ Title = "Confirmed", Content = "Confirmed action executed." })
+		end,
+	})
+
+	TwoColStack:Button({
+		Title = "Cancel Action",
+		Color = Red,
+		Justify = "Center",
+		Callback = function()
+			WindUI:Notify({ Title = "Cancelled", Content = "Cancelled action." })
+		end,
+	})
+
+	LayoutsTab:Space()
+	LayoutsTab:Divider()
+	LayoutsTab:Space()
+
+	LayoutsTab:Paragraph({
+		Title = "Three Column Row",
+		Desc = "Equal distribution across three buttons in a single row",
+	})
+
+	LayoutsTab:Space()
+
+	local ThreeColStack = LayoutsTab:HStack({
+		AutoSpace = false,
+	})
+
+	ThreeColStack:Button({
+		Title = "Left",
+		Justify = "Center",
+		Callback = function() end,
+	})
+
+	ThreeColStack:Button({
+		Title = "Center",
+		Justify = "Center",
+		Callback = function() end,
+	})
+
+	ThreeColStack:Button({
+		Title = "Right",
+		Justify = "Center",
+		Callback = function() end,
+	})
+
+	LayoutsTab:Space()
+end
+
+-- */  Dialogs & Popups Tab  /* --
+do
+	local DialogsTab = ElementsSection:Tab({
+		Title = "Dialogs & Modals",
+		Icon = "solar:chat-round-dots-bold",
+		IconColor = Yellow,
+		IconShape = "Square",
+		Border = true,
+	})
+
+	DialogsTab:Button({
+		Title = "Open Confirmation Dialog",
+		Desc = "Demonstrates Window:Dialog with Primary, Secondary, and Tertiary actions",
+		Color = Yellow,
+		Callback = function()
+			Window:Dialog({
+				Title = "Save Changes?",
+				Content = "You have unsaved changes. Do you want to apply them before exiting?",
+				Icon = "solar:question-circle-bold",
+				Buttons = {
+					{
+						Title = "Save",
+						Variant = "Primary",
+						Callback = function()
+							WindUI:Notify({
+								Title = "Saved",
+								Content = "Changes applied successfully.",
+								Icon = "solar:check-circle-bold",
+							})
+						end,
+					},
+					{
+						Title = "Discard",
+						Variant = "Secondary",
+						Callback = function()
+							WindUI:Notify({
+								Title = "Discarded",
+								Content = "Changes were discarded.",
+							})
+						end,
+					},
+					{
+						Title = "Cancel",
+						Variant = "Tertiary",
+						Callback = function() end,
+					},
+				},
+			})
+		end,
+	})
+
+	DialogsTab:Space()
+
+	DialogsTab:Button({
+		Title = "Open Danger Dialog",
+		Desc = "Confirmation modal for destructive actions",
+		Color = Red,
+		Callback = function()
+			Window:Dialog({
+				Title = "Reset Configuration",
+				Content = "Are you sure you want to reset all settings to defaults? This action cannot be undone.",
+				Icon = "solar:danger-triangle-bold",
+				Buttons = {
+					{
+						Title = "Reset All",
+						Variant = "Primary",
+						Callback = function()
+							WindUI:Notify({
+								Title = "Reset",
+								Content = "Configuration reset.",
+								Icon = "solar:restart-bold",
+							})
+						end,
+					},
+					{
+						Title = "Cancel",
+						Variant = "Tertiary",
+						Callback = function() end,
+					},
+				},
+			})
+		end,
+	})
+
+	DialogsTab:Space()
+
+	DialogsTab:Button({
+		Title = "Show Global Popup",
+		Desc = "Demonstrates WindUI:Popup announcement banner",
+		Callback = function()
+			WindUI:Popup({
+				Title = "WindUI Fork",
+				Icon = "solar:star-fall-minimalistic-bold",
+				Content = "Welcome to the enhanced WindUI Fork with infinite resize and smooth 3D rendering!",
+				Buttons = {
+					{
+						Title = "Got it!",
+						Variant = "Primary",
+						Callback = function() end,
+					},
+				},
+			})
+		end,
+	})
+
+	DialogsTab:Space()
+end
+
 -- */  Config Usage  /* --
 if not RunService:IsStudio() and writefile and printidentity() then
 	do -- config elements
@@ -1223,6 +1606,88 @@ do
 			Color = "Red",
 		})
 	end
+end
+
+-- */  Themes Tab  /* --
+do
+	local ThemesTab = OtherSection:Tab({
+		Title = "Themes & Profile",
+		Icon = "solar:pallete-2-bold",
+		IconColor = Purple,
+		IconShape = "Square",
+		Border = true,
+	})
+
+	local themeNames = {}
+	for name in pairs(WindUI:GetThemes()) do
+		table.insert(themeNames, name)
+	end
+	table.sort(themeNames)
+
+	ThemesTab:Dropdown({
+		Title = "Select Theme",
+		Desc = "Switch the UI color scheme on the fly",
+		Values = themeNames,
+		Value = WindUI:GetCurrentTheme(),
+		Callback = function(selectedTheme)
+			WindUI:SetTheme(selectedTheme)
+		end,
+	})
+
+	ThemesTab:Space()
+
+	ThemesTab:Button({
+		Title = "Register Custom Theme (Nord)",
+		Desc = "Adds a custom pastel dark-nord palette via WindUI:AddTheme",
+		Callback = function()
+			WindUI:AddTheme({
+				Name = "Nord",
+				Accent = Color3.fromHex("#88C0D0"),
+				Dialog = Color3.fromHex("#2E3440"),
+				Outline = Color3.fromHex("#4C566A"),
+				Text = Color3.fromHex("#ECEFF4"),
+				Placeholder = Color3.fromHex("#D8DEE9"),
+				Background = Color3.fromHex("#242933"),
+				Button = Color3.fromHex("#3B4252"),
+				Icon = Color3.fromHex("#88C0D0"),
+				Toggle = Color3.fromHex("#88C0D0"),
+				Slider = Color3.fromHex("#88C0D0"),
+				Checkbox = Color3.fromHex("#88C0D0"),
+				ElementBackground = Color3.fromHex("#2E3440"),
+				ElementBackgroundTransparency = 0,
+			})
+			WindUI:SetTheme("Nord")
+			WindUI:Notify({
+				Title = "Custom Theme Applied",
+				Content = "Switched to newly registered 'Nord' theme!",
+				Icon = "solar:pallete-2-bold",
+			})
+		end,
+	})
+
+	ThemesTab:Space()
+	ThemesTab:Divider()
+	ThemesTab:Space()
+
+	ThemesTab:Paragraph({
+		Title = "User Profile Card",
+		Desc = "Controls the user badge at the bottom of the sidebar.",
+	})
+
+	ThemesTab:Space()
+
+	ThemesTab:Toggle({
+		Title = "Anonymous Mode",
+		Desc = "Hide username and display 'Anonymous' in profile card",
+		Value = (Window.User and Window.User.Anonymous) or false,
+		Callback = function(isAnon)
+			if Window.User and Window.User.SetAnonymous then
+				Window.User:SetAnonymous(isAnon)
+			end
+		end,
+	})
+
+	ThemesTab:Space()
 end
 
 local Tabs = {

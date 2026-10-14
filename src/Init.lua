@@ -244,8 +244,8 @@ function WindUI:ToggleAcrylic(Value)
 	end
 end
 
-function WindUI:SetDynamic3D(frame, enabled, options)
-	return WindUI.Dynamic3D.Set(frame, enabled, options)
+function WindUI:SetDynamic3D(frame, enabled, options, immediate)
+	return WindUI.Dynamic3D.Set(frame, enabled, options, immediate)
 end
 
 function WindUI:Gradient(stops, props)

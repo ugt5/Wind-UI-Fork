@@ -47,7 +47,7 @@ return function(Config)
 		Size = Config.Size,
 
 		MinSize = Config.MinSize or Vector2.new(560, 350),
-		MaxSize = Config.MaxSize or Vector2.new(850, 560),
+		MaxSize = Config.MaxSize or Vector2.new(math.huge, math.huge),
 
 		TopBarButtonIconSize = Config.TopBarButtonIconSize,
 
@@ -1533,7 +1533,7 @@ return function(Config)
 	end
 	function Window:Destroy()
 		if Window.Dynamic3DRender then
-			Window:Toggle3D(false)
+			Window:Toggle3D(false, true)
 		end
 		return Window:Close():Destroy()
 	end
@@ -1545,7 +1545,7 @@ return function(Config)
 		end
 	end
 
-	function Window:Toggle3D(Value)
+	function Window:Toggle3D(Value, immediate)
 		if Value == nil then
 			Value = not Window.Dynamic3DRender
 		end
@@ -1553,7 +1553,7 @@ return function(Config)
 		return Dynamic3D.Set(Window.UIElements.Main, Value, {
 			MaxTiltAngle = Config.Dynamic3DTilt or 8,
 			Responsiveness = Config.Dynamic3DSmoothness or 12,
-		})
+		}, immediate)
 	end
 
 	function Window:ToggleTransparency(Value)
