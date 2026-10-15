@@ -26242,15 +26242,13 @@ end)
 local d=b(game:GetService"RunService")
 local e=b(game:GetService"UserInputService")
 local f=b(game:GetService"TweenService")
-local g=b(game:GetService"GuiService")
-local h=b(game:GetService"Players")
-local i=b(game:GetService"CoreGui")
-local l=b(game:GetService"Workspace")
+local g=b(game:GetService"Players")
+local h=b(game:GetService"CoreGui")
+local i=b(game:GetService"Workspace")
 
-local m=h.LocalPlayer
-local p=protectgui or(syn and syn.protect_gui)or function()end
-local r=gethui and gethui()or(i or(m and m:WaitForChild"PlayerGui"))
-
+local l=g.LocalPlayer
+local m=protectgui or(syn and syn.protect_gui)or function()end
+local p=gethui and gethui()or(h or(l and l:WaitForChild"PlayerGui"))
 
 
 
@@ -26259,283 +26257,284 @@ local r=gethui and gethui()or(i or(m and m:WaitForChild"PlayerGui"))
 
 
 
-local u={}
-u.__index=u
+
+local r={}
+r.__index=r
 
 
-local v:{[GuiObject]:any}={}
+local u:{[GuiObject]:any}={}
 
-local function cleanupSession(x,z)
-if x.Connection then
-x.Connection:Disconnect()
-x.Connection=nil
+local function cleanupSession(v,x)
+if v.Connection then
+v.Connection:Disconnect()
+v.Connection=nil
 end
 
-if x.AncestryConnection then
-x.AncestryConnection:Disconnect()
-x.AncestryConnection=nil
-end
-
-
-if x.OriginalParent and x.OriginalParent.Parent then
-z.Parent=x.OriginalParent
-end
-
-if x.SurfaceGui then
-x.SurfaceGui:Destroy()
-x.SurfaceGui=nil
-end
-
-if x.Part then
-x.Part:Destroy()
-x.Part=nil
-end
-
-if v[z]==x then
-v[z]=nil
-end
+if v.AncestryConnection then
+v.AncestryConnection:Disconnect()
+v.AncestryConnection=nil
 end
 
 
+if v.OriginalParent and v.OriginalParent.Parent then
+x.Parent=v.OriginalParent
+end
+
+if v.SurfaceGui then
+v.SurfaceGui:Destroy()
+v.SurfaceGui=nil
+end
+
+if v.Part then
+v.Part:Destroy()
+v.Part=nil
+end
+
+if u[x]==v then
+u[x]=nil
+end
+end
 
 
 
 
 
-function u.Set(x:GuiObject,z:boolean,A:Dynamic3DOptions__DARKLUA_TYPE_a?,B:boolean?)
-if not x or typeof(x)~="Instance"or not x:IsA"GuiObject"then
-warn("[WindUI:Dynamic3D] Invalid menuFrame provided. Expected GuiObject, got: "..typeof(x))
+
+
+function r.Set(v:GuiObject,x:boolean,z:Dynamic3DOptions__DARKLUA_TYPE_a?,A:boolean?)
+if not v or typeof(v)~="Instance"or not v:IsA"GuiObject"then
+warn("[WindUI:Dynamic3D] Invalid menuFrame provided. Expected GuiObject, got: "..typeof(v))
 return
 end
 
 
-if not z then
-local C=v[x]
-if not C then
+if not x then
+local B=u[v]
+if not B then
 return
 end
 
+if A then
+cleanupSession(B,v)
+return
+end
+
+if B.Exiting then
+return
+end
+
+B.Exiting=true
+B.ExitElapsed=0
+B.ExitDuration=(z and z.ExitDuration)or 0.35
+B.StartExitRotX=B.CurrentRotX or 0
+B.StartExitRotY=B.CurrentRotY or 0
+return
+end
+
+
+local B=u[v]
 if B then
-cleanupSession(C,x)
-return
+if B.Exiting then
+B.Exiting=false
+B.ExitElapsed=nil
+B.StartExitRotX=nil
+B.StartExitRotY=nil
+end
+return B
 end
 
-if C.Exiting then
-return
-end
+z=z or{}
+local C=z.MaxTiltAngle or 5
+local F=math.rad(C)
+local G=z.Responsiveness or 18
+local H=z.Distance or 2
+local J=z.FalloffDistance or 120
 
-C.Exiting=true
-C.ExitElapsed=0
-C.ExitDuration=(A and A.ExitDuration)or 0.35
-C.StartExitRotX=C.CurrentRotX or 0
-C.StartExitRotY=C.CurrentRotY or 0
-return
-end
+local L=v.Parent
+local M=i.CurrentCamera
 
 
-local C=v[x]
-if C then
-if C.Exiting then
-C.Exiting=false
-C.ExitElapsed=nil
-C.StartExitRotX=nil
-C.StartExitRotY=nil
-end
-return C
-end
-
-A=A or{}
-local F=A.MaxTiltAngle or 5
-local G=math.rad(F)
-local H=A.Responsiveness or 18
-local J=A.Distance or 2
-local L=A.FalloffDistance or 120
-
-local M=x.Parent
-local N=l.CurrentCamera
+local N=Instance.new"Part"
+N.Name="WindUI_3DPart"
+N.Transparency=1
+N.CanCollide=false
+N.CanTouch=false
+N.CanQuery=true
+N.CastShadow=false
+N.Anchored=true
+N.Material=Enum.Material.SmoothPlastic
+N.Parent=M
 
 
-local O=Instance.new"Part"
-O.Name="WindUI_3DPart"
-O.Transparency=1
-O.CanCollide=false
-O.CanTouch=false
-O.CanQuery=true
-O.CastShadow=false
-O.Anchored=true
-O.Material=Enum.Material.SmoothPlastic
-O.Parent=N
+local O=Instance.new"SurfaceGui"
+O.Name="WindUI_3DSurface"
+O.Face=Enum.NormalId.Back
+O.AlwaysOnTop=true
+O.LightInfluence=0
+O.Active=true
+O.ClipsDescendants=false
+O.ResetOnSpawn=false
+O.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+O.SizingMode=Enum.SurfaceGuiSizingMode.FixedSize
+O.Adornee=N
+O.Parent=p
+m(O)
 
 
-local P=Instance.new"SurfaceGui"
-P.Name="WindUI_3DSurface"
-P.Face=Enum.NormalId.Back
-P.AlwaysOnTop=true
-P.LightInfluence=0
-P.Active=true
-P.ClipsDescendants=false
-P.ResetOnSpawn=false
-P.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
-P.SizingMode=Enum.SurfaceGuiSizingMode.FixedSize
-P.Adornee=O
-P.Parent=r
-p(P)
+v.Parent=O
 
-
-x.Parent=P
-
+local P=0
 local Q=0
-local R=0
 
-local S
-S={
-Part=O,
-SurfaceGui=P,
+local R
+R={
+Part=N,
+SurfaceGui=O,
 Connection=nil,
 AncestryConnection=nil,
-OriginalParent=M,
+OriginalParent=L,
 CurrentRotX=0,
 CurrentRotY=0,
 Exiting=false,
 }
-v[x]=S
+u[v]=R
 
-local T
-T=d.RenderStepped:Connect(function(U:number)
-local V=l.CurrentCamera
-if not V or not O or not O.Parent then
+local S
+S=d.RenderStepped:Connect(function(T:number)
+local U=i.CurrentCamera
+if not U or not N or not N.Parent then
 return
 end
 
-if O.Parent~=V then
-O.Parent=V
+if N.Parent~=U then
+N.Parent=U
 end
 
-local W=V.ViewportSize
-if W.X<=0 or W.Y<=0 then
+local V=U.ViewportSize
+if V.X<=0 or V.Y<=0 then
 return
 end
 
 
-if P.CanvasSize~=W then
-P.CanvasSize=W
+if O.CanvasSize~=V then
+O.CanvasSize=V
 end
 
 
-local X=math.rad(V.FieldOfView)
-local Y=2*J*math.tan(X/2)
-local _=Y*(W.X/W.Y)
-O.Size=Vector3.new(_,Y,0.001)
+local W=math.rad(U.FieldOfView)
+local X=2*H*math.tan(W/2)
+local Y=X*(V.X/V.Y)
+N.Size=Vector3.new(Y,X,0.001)
 
-local aa=_/W.X
-local ab=Y/W.Y
-
-
-local ac=x.AbsolutePosition
-local ad=x.AbsoluteSize
-local ae=ad.X/2
-local af=ad.Y/2
-local ag=ac.X+ae
-local ah=ac.Y+af
+local _=Y/V.X
+local aa=X/V.Y
 
 
-local ai=(ag-W.X/2)*aa
-local aj=(W.Y/2-ah)*ab
-local ak=Vector3.new(ai,aj,-J)
+local ab=v.AbsolutePosition
+local ac=v.AbsoluteSize
+local ad=ac.X/2
+local ae=ac.Y/2
+local af=ab.X+ad
+local ag=ab.Y+ae
 
-if S.Exiting then
-S.ExitElapsed=S.ExitElapsed+U
-local al=math.clamp(S.ExitElapsed/S.ExitDuration,0,1)
+
+local ah=(af-V.X/2)*_
+local ai=(V.Y/2-ag)*aa
+local aj=Vector3.new(ah,ai,-H)
+local ak=N.Size.Z/2
+
+if R.Exiting then
+R.ExitElapsed=R.ExitElapsed+T
+local al=math.clamp(R.ExitElapsed/R.ExitDuration,0,1)
 local am=f:GetValue(al,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
 
-Q=S.StartExitRotX*(1-am)
-R=S.StartExitRotY*(1-am)
-S.CurrentRotX=Q
-S.CurrentRotY=R
+P=R.StartExitRotX*(1-am)
+Q=R.StartExitRotY*(1-am)
+R.CurrentRotX=P
+R.CurrentRotY=Q
 
-local an=CFrame.Angles(Q,R,0)
-local ao=CFrame.new(ak)*an*CFrame.new(-ai,-aj,0)
-O.CFrame=V.CFrame*ao
+local an=CFrame.Angles(P,Q,0)
+local ao=CFrame.new(aj)*an*CFrame.new(-ah,-ai,-ak)
+N.CFrame=U.CFrame*ao
 
 if al>=1 then
-cleanupSession(S,x)
+cleanupSession(R,v)
 end
 return
 end
 
 
-local al=g:GetGuiInset()
-local am=e:GetMouseLocation()-al
+local al=e:GetMouseLocation()
 
-local an=am.X-ag
-local ao=ah-am.Y
-
-
-local ap=math.max(0,math.abs(am.X-ag)-ae)
-local aq=math.max(0,math.abs(am.Y-ah)-af)
-local ar=math.sqrt(ap*ap+aq*aq)
+local am=al.X-af
+local an=ag-al.Y
 
 
-local as=1
-if ar>0 then
-local at=math.clamp(1-(ar/L),0,1)
-as=at*at*(3-2*at)
+local ao=math.max(0,math.abs(al.X-af)-ad)
+local ap=math.max(0,math.abs(al.Y-ag)-ae)
+local aq=math.sqrt(ao*ao+ap*ap)
+
+
+local ar=1
+if aq>0 then
+local as=math.clamp(1-(aq/J),0,1)
+ar=as*as*(3-2*as)
 end
 
 
 if e:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)then
-as=as*0.7
+ar=0
 end
 
+local as=0
 local at=0
-local au=0
-if ae>0 and af>0 then
-at=math.clamp(an/ae,-1,1)*as
-au=math.clamp(ao/af,-1,1)*as
+if ad>0 and ae>0 then
+as=math.clamp(am/ad,-1,1)*ar
+at=math.clamp(an/ae,-1,1)*ar
 end
 
 
 
 
-local av=at*G
-local aw=-au*G
+local au=as*F
+local av=-at*F
 
 
-local ax=math.clamp(U*H,0,1)
-Q=Q+(aw-Q)*ax
-R=R+(av-R)*ax
-S.CurrentRotX=Q
-S.CurrentRotY=R
+local aw=math.clamp(T*G,0,1)
+P=P+(av-P)*aw
+Q=Q+(au-Q)*aw
+R.CurrentRotX=P
+R.CurrentRotY=Q
 
 
-local ay=CFrame.Angles(Q,R,0)
-local az=CFrame.new(ak)*ay*CFrame.new(-ai,-aj,0)
-O.CFrame=V.CFrame*az
+local ax=CFrame.Angles(P,Q,0)
+local ay=CFrame.new(aj)*ax*CFrame.new(-ah,-ai,-ak)
+N.CFrame=U.CFrame*ay
 end)
 
-S.Connection=T
+R.Connection=S
 
 
 local aa
-aa=x.AncestryChanged:Connect(function(ab,ac)
-if ac==nil and v[x]then
-u.Set(x,false,nil,true)
+aa=v.AncestryChanged:Connect(function(ab,ac)
+if ac==nil and u[v]then
+r.Set(v,false,nil,true)
 end
 end)
 
-S.AncestryConnection=aa
+R.AncestryConnection=aa
 
-return S
+return R
 end
 
 
-setmetatable(u,{
+setmetatable(r,{
 __call=function(aa,ab:GuiObject,ac:boolean,ad:Dynamic3DOptions__DARKLUA_TYPE_a?,ae:boolean?)
-return u.Set(ab,ac,ad,ae)
+return r.Set(ab,ac,ad,ae)
 end,
 })
 
-return u end function a.n()
+return r end function a.n()
 
 
 
@@ -26548,54 +26547,54 @@ return u end function a.n()
 
 
 
-local aa=4294967296;local ab=aa-1;local function c(ac,ad)local ae,af=0,1;while ac~=0 or ad~=0 do local ag,ah=ac%2,ad%2;local ai=(ag+ah)%2;ae=ae+ai*af;ac=math.floor(ac/2)ad=math.floor(ad/2)af=af*2 end;return ae%aa end;local function k(ac,ad,ae,...)local af;if ad then ac=ac%aa;ad=ad%aa;af=c(ac,ad)if ae then af=k(af,ae,...)end;return af elseif ac then return ac%aa else return 0 end end;local function n(ac,ad,ae,...)local af;if ad then ac=ac%aa;ad=ad%aa;af=(ac+ad-c(ac,ad))/2;if ae then af=n(af,ae,...)end;return af elseif ac then return ac%aa else return ab end end;local function o(ac)return ab-ac end;local function q(ac,ad)if ad<0 then return lshift(ac,-ad)end;return math.floor(ac%4294967296/2^ad)end;local function s(ac,ad)if ad>31 or ad<-31 then return 0 end;return q(ac%aa,ad)end;local function lshift(ac,ad)if ad<0 then return s(ac,-ad)end;return ac*2^ad%4294967296 end;local function t(ac,ad)ac=ac%aa;ad=ad%32;local ae=n(ac,2^ad-1)return s(ac,ad)+lshift(ae,32-ad)end;local ac={0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2}local function w(ad)return string.gsub(ad,".",function(ae)return string.format("%02x",string.byte(ae))end)end;local function y(ad,ae)local af=""for ag=1,ae do local ah=ad%256;af=string.char(ah)..af;ad=(ad-ah)/256 end;return af end;local function D(ad,ae)local af=0;for ag=ae,ae+3 do af=af*256+string.byte(ad,ag)end;return af end;local function E(ad,ae)local af=64-(ae+9)%64;ae=y(8*ae,8)ad=ad.."\128"..string.rep("\0",af)..ae;assert(#ad%64==0)return ad end;local function I(ad)ad[1]=0x6a09e667;ad[2]=0xbb67ae85;ad[3]=0x3c6ef372;ad[4]=0xa54ff53a;ad[5]=0x510e527f;ad[6]=0x9b05688c;ad[7]=0x1f83d9ab;ad[8]=0x5be0cd19;return ad end;local function K(ad,ae,af)local ag={}for ah=1,16 do ag[ah]=D(ad,ae+(ah-1)*4)end;for ah=17,64 do local ai=ag[ah-15]local aj=k(t(ai,7),t(ai,18),s(ai,3))ai=ag[ah-2]ag[ah]=(ag[ah-16]+aj+ag[ah-7]+k(t(ai,17),t(ai,19),s(ai,10)))%aa end;local ah,ai,aj,ak,al,am,an,ao=af[1],af[2],af[3],af[4],af[5],af[6],af[7],af[8]for ap=1,64 do local aq=k(t(ah,2),t(ah,13),t(ah,22))local ar=k(n(ah,ai),n(ah,aj),n(ai,aj))local as=(aq+ar)%aa;local at=k(t(al,6),t(al,11),t(al,25))local au=k(n(al,am),n(o(al),an))local av=(ao+at+au+ac[ap]+ag[ap])%aa;ao=an;an=am;am=al;al=(ak+av)%aa;ak=aj;aj=ai;ai=ah;ah=(av+as)%aa end;af[1]=(af[1]+ah)%aa;af[2]=(af[2]+ai)%aa;af[3]=(af[3]+aj)%aa;af[4]=(af[4]+ak)%aa;af[5]=(af[5]+al)%aa;af[6]=(af[6]+am)%aa;af[7]=(af[7]+an)%aa;af[8]=(af[8]+ao)%aa end;local function Z(ad)ad=E(ad,#ad)local ae=I{}for af=1,#ad,64 do K(ad,af,ae)end;return w(y(ae[1],4)..y(ae[2],4)..y(ae[3],4)..y(ae[4],4)..y(ae[5],4)..y(ae[6],4)..y(ae[7],4)..y(ae[8],4))end;local ad;local ae={["\\"]="\\",["\""]="\"",["\b"]="b",["\f"]="f",["\n"]="n",["\r"]="r",["\t"]="t"}local af={["/"]="/"}for ag,ah in pairs(ae)do af[ah]=ag end;local ag=function(ag)return"\\"..(ae[ag]or string.format("u%04x",ag:byte()))end;local ah=function(ah)return"null"end;local ai=function(ai,aj)local ak={}aj=aj or{}if aj[ai]then error"circular reference"end;aj[ai]=true;if rawget(ai,1)~=nil or next(ai)==nil then local al=0;for am in pairs(ai)do if type(am)~="number"then error"invalid table: mixed or invalid key types"end;al=al+1 end;if al~=#ai then error"invalid table: sparse array"end;for am,an in ipairs(ai)do table.insert(ak,ad(an,aj))end;aj[ai]=nil;return"["..table.concat(ak,",").."]"else for al,am in pairs(ai)do if type(al)~="string"then error"invalid table: mixed or invalid key types"end;table.insert(ak,ad(al,aj)..":"..ad(am,aj))end;aj[ai]=nil;return"{"..table.concat(ak,",").."}"end end;local aj=function(aj)return'"'..aj:gsub('[%z\1-\31\\"]',ag)..'"'end;local ak=function(ak)if ak~=ak or ak<=-math.huge or ak>=math.huge then error("unexpected number value '"..tostring(ak).."'")end;return string.format("%.14g",ak)end;local al={["nil"]=ah,table=ai,string=aj,number=ak,boolean=tostring}ad=function(am,an)local ao=type(am)local ap=al[ao]if ap then return ap(am,an)end;error("unexpected type '"..ao.."'")end;local am=function(am)return ad(am)end;local an;local ao=function(...)local ao={}for ap=1,select("#",...)do ao[select(ap,...)]=true end;return ao end;local ap=ao(" ","\t","\r","\n")local aq=ao(" ","\t","\r","\n","]","}",",")local ar=ao("\\","/",'"',"b","f","n","r","t","u")local as=ao("true","false","null")local at={["true"]=true,["false"]=false,null=nil}local au=function(au,av,aw,ax)for ay=av,#au do if aw[au:sub(ay,ay)]~=ax then return ay end end;return#au+1 end;local av=function(av,aw,ax)local ay=1;local az=1;for b=1,aw-1 do az=az+1;if av:sub(b,b)=="\n"then ay=ay+1;az=1 end end;error(string.format("%s at line %d col %d",ax,ay,az))end;local aw=function(aw)local ax=math.floor;if aw<=0x7f then return string.char(aw)elseif aw<=0x7ff then return string.char(ax(aw/64)+192,aw%64+128)elseif aw<=0xffff then return string.char(ax(aw/4096)+224,ax(aw%4096/64)+128,aw%64+128)elseif aw<=0x10ffff then return string.char(ax(aw/262144)+240,ax(aw%262144/4096)+128,ax(aw%4096/64)+128,aw%64+128)end;error(string.format("invalid unicode codepoint '%x'",aw))end;local ax=function(ax)local ay=tonumber(ax:sub(1,4),16)local az=tonumber(ax:sub(7,10),16)if az then return aw((ay-0xd800)*0x400+az-0xdc00+0x10000)else return aw(ay)end end;local ay=function(ay,az)local b=""local d=az+1;local e=d;while d<=#ay do local f=ay:byte(d)if f<32 then av(ay,d,"control character in string")elseif f==92 then b=b..ay:sub(e,d-1)d=d+1;local g=ay:sub(d,d)if g=="u"then local h=ay:match("^[dD][89aAbB]%x%x\\u%x%x%x%x",d+1)or ay:match("^%x%x%x%x",d+1)or av(ay,d-1,"invalid unicode escape in string")b=b..ax(h)d=d+#h else if not ar[g]then av(ay,d-1,"invalid escape char '"..g.."' in string")end;b=b..af[g]end;e=d+1 elseif f==34 then b=b..ay:sub(e,d-1)return b,d+1 end;d=d+1 end;av(ay,az,"expected closing quote for string")end;local az=function(az,b)local d=au(az,b,aq)local e=az:sub(b,d-1)local f=tonumber(e)if not f then av(az,b,"invalid number '"..e.."'")end;return f,d end;local b=function(b,d)local e=au(b,d,aq)local f=b:sub(d,e-1)if not as[f]then av(b,d,"invalid literal '"..f.."'")end;return at[f],e end;local d=function(d,e)local f={}local g=1;e=e+1;while 1 do local h;e=au(d,e,ap,true)if d:sub(e,e)=="]"then e=e+1;break end;h,e=an(d,e)f[g]=h;g=g+1;e=au(d,e,ap,true)local i=d:sub(e,e)e=e+1;if i=="]"then break end;if i~=","then av(d,e,"expected ']' or ','")end end;return f,e end;local e=function(e,f)local g={}f=f+1;while 1 do local h,i;f=au(e,f,ap,true)if e:sub(f,f)=="}"then f=f+1;break end;if e:sub(f,f)~='"'then av(e,f,"expected string for key")end;h,f=an(e,f)f=au(e,f,ap,true)if e:sub(f,f)~=":"then av(e,f,"expected ':' after key")end;f=au(e,f+1,ap,true)i,f=an(e,f)g[h]=i;f=au(e,f,ap,true)local l=e:sub(f,f)f=f+1;if l=="}"then break end;if l~=","then av(e,f,"expected '}' or ','")end end;return g,f end;local f={['"']=ay,["0"]=az,["1"]=az,["2"]=az,["3"]=az,["4"]=az,["5"]=az,["6"]=az,["7"]=az,["8"]=az,["9"]=az,["-"]=az,t=b,f=b,n=b,["["]=d,["{"]=e}an=function(g,h)local i=g:sub(h,h)local l=f[i]if l then return l(g,h)end;av(g,h,"unexpected character '"..i.."'")end;local g=function(g)if type(g)~="string"then error("expected argument of type string, got "..type(g))end;local h,i=an(g,au(g,1,ap,true))i=au(g,i,ap,true)if i<=#g then av(g,i,"trailing garbage")end;return h end;
-local h,i,l=am,g,Z;
+local aa=4294967296;local ab=aa-1;local function c(ac,ad)local ae,af=0,1;while ac~=0 or ad~=0 do local ag,ah=ac%2,ad%2;local ai=(ag+ah)%2;ae=ae+ai*af;ac=math.floor(ac/2)ad=math.floor(ad/2)af=af*2 end;return ae%aa end;local function k(ac,ad,ae,...)local af;if ad then ac=ac%aa;ad=ad%aa;af=c(ac,ad)if ae then af=k(af,ae,...)end;return af elseif ac then return ac%aa else return 0 end end;local function n(ac,ad,ae,...)local af;if ad then ac=ac%aa;ad=ad%aa;af=(ac+ad-c(ac,ad))/2;if ae then af=n(af,ae,...)end;return af elseif ac then return ac%aa else return ab end end;local function o(ac)return ab-ac end;local function q(ac,ad)if ad<0 then return lshift(ac,-ad)end;return math.floor(ac%4294967296/2^ad)end;local function s(ac,ad)if ad>31 or ad<-31 then return 0 end;return q(ac%aa,ad)end;local function lshift(ac,ad)if ad<0 then return s(ac,-ad)end;return ac*2^ad%4294967296 end;local function t(ac,ad)ac=ac%aa;ad=ad%32;local ae=n(ac,2^ad-1)return s(ac,ad)+lshift(ae,32-ad)end;local ac={0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2}local function w(ad)return string.gsub(ad,".",function(ae)return string.format("%02x",string.byte(ae))end)end;local function y(ad,ae)local af=""for ag=1,ae do local ah=ad%256;af=string.char(ah)..af;ad=(ad-ah)/256 end;return af end;local function D(ad,ae)local af=0;for ag=ae,ae+3 do af=af*256+string.byte(ad,ag)end;return af end;local function E(ad,ae)local af=64-(ae+9)%64;ae=y(8*ae,8)ad=ad.."\128"..string.rep("\0",af)..ae;assert(#ad%64==0)return ad end;local function I(ad)ad[1]=0x6a09e667;ad[2]=0xbb67ae85;ad[3]=0x3c6ef372;ad[4]=0xa54ff53a;ad[5]=0x510e527f;ad[6]=0x9b05688c;ad[7]=0x1f83d9ab;ad[8]=0x5be0cd19;return ad end;local function K(ad,ae,af)local ag={}for ah=1,16 do ag[ah]=D(ad,ae+(ah-1)*4)end;for ah=17,64 do local ai=ag[ah-15]local aj=k(t(ai,7),t(ai,18),s(ai,3))ai=ag[ah-2]ag[ah]=(ag[ah-16]+aj+ag[ah-7]+k(t(ai,17),t(ai,19),s(ai,10)))%aa end;local ah,ai,aj,ak,al,am,an,ao=af[1],af[2],af[3],af[4],af[5],af[6],af[7],af[8]for ap=1,64 do local aq=k(t(ah,2),t(ah,13),t(ah,22))local ar=k(n(ah,ai),n(ah,aj),n(ai,aj))local as=(aq+ar)%aa;local at=k(t(al,6),t(al,11),t(al,25))local au=k(n(al,am),n(o(al),an))local av=(ao+at+au+ac[ap]+ag[ap])%aa;ao=an;an=am;am=al;al=(ak+av)%aa;ak=aj;aj=ai;ai=ah;ah=(av+as)%aa end;af[1]=(af[1]+ah)%aa;af[2]=(af[2]+ai)%aa;af[3]=(af[3]+aj)%aa;af[4]=(af[4]+ak)%aa;af[5]=(af[5]+al)%aa;af[6]=(af[6]+am)%aa;af[7]=(af[7]+an)%aa;af[8]=(af[8]+ao)%aa end;local function Z(ad)ad=E(ad,#ad)local ae=I{}for af=1,#ad,64 do K(ad,af,ae)end;return w(y(ae[1],4)..y(ae[2],4)..y(ae[3],4)..y(ae[4],4)..y(ae[5],4)..y(ae[6],4)..y(ae[7],4)..y(ae[8],4))end;local ad;local ae={["\\"]="\\",["\""]="\"",["\b"]="b",["\f"]="f",["\n"]="n",["\r"]="r",["\t"]="t"}local af={["/"]="/"}for ag,ah in pairs(ae)do af[ah]=ag end;local ag=function(ag)return"\\"..(ae[ag]or string.format("u%04x",ag:byte()))end;local ah=function(ah)return"null"end;local ai=function(ai,aj)local ak={}aj=aj or{}if aj[ai]then error"circular reference"end;aj[ai]=true;if rawget(ai,1)~=nil or next(ai)==nil then local al=0;for am in pairs(ai)do if type(am)~="number"then error"invalid table: mixed or invalid key types"end;al=al+1 end;if al~=#ai then error"invalid table: sparse array"end;for am,an in ipairs(ai)do table.insert(ak,ad(an,aj))end;aj[ai]=nil;return"["..table.concat(ak,",").."]"else for al,am in pairs(ai)do if type(al)~="string"then error"invalid table: mixed or invalid key types"end;table.insert(ak,ad(al,aj)..":"..ad(am,aj))end;aj[ai]=nil;return"{"..table.concat(ak,",").."}"end end;local aj=function(aj)return'"'..aj:gsub('[%z\1-\31\\"]',ag)..'"'end;local ak=function(ak)if ak~=ak or ak<=-math.huge or ak>=math.huge then error("unexpected number value '"..tostring(ak).."'")end;return string.format("%.14g",ak)end;local al={["nil"]=ah,table=ai,string=aj,number=ak,boolean=tostring}ad=function(am,an)local ao=type(am)local ap=al[ao]if ap then return ap(am,an)end;error("unexpected type '"..ao.."'")end;local am=function(am)return ad(am)end;local an;local ao=function(...)local ao={}for ap=1,select("#",...)do ao[select(ap,...)]=true end;return ao end;local ap=ao(" ","\t","\r","\n")local aq=ao(" ","\t","\r","\n","]","}",",")local ar=ao("\\","/",'"',"b","f","n","r","t","u")local as=ao("true","false","null")local at={["true"]=true,["false"]=false,null=nil}local au=function(au,av,aw,ax)for ay=av,#au do if aw[au:sub(ay,ay)]~=ax then return ay end end;return#au+1 end;local av=function(av,aw,ax)local ay=1;local b=1;for d=1,aw-1 do b=b+1;if av:sub(d,d)=="\n"then ay=ay+1;b=1 end end;error(string.format("%s at line %d col %d",ax,ay,b))end;local aw=function(aw)local ax=math.floor;if aw<=0x7f then return string.char(aw)elseif aw<=0x7ff then return string.char(ax(aw/64)+192,aw%64+128)elseif aw<=0xffff then return string.char(ax(aw/4096)+224,ax(aw%4096/64)+128,aw%64+128)elseif aw<=0x10ffff then return string.char(ax(aw/262144)+240,ax(aw%262144/4096)+128,ax(aw%4096/64)+128,aw%64+128)end;error(string.format("invalid unicode codepoint '%x'",aw))end;local ax=function(ax)local ay=tonumber(ax:sub(1,4),16)local b=tonumber(ax:sub(7,10),16)if b then return aw((ay-0xd800)*0x400+b-0xdc00+0x10000)else return aw(ay)end end;local ay=function(ay,b)local d=""local e=b+1;local f=e;while e<=#ay do local g=ay:byte(e)if g<32 then av(ay,e,"control character in string")elseif g==92 then d=d..ay:sub(f,e-1)e=e+1;local h=ay:sub(e,e)if h=="u"then local i=ay:match("^[dD][89aAbB]%x%x\\u%x%x%x%x",e+1)or ay:match("^%x%x%x%x",e+1)or av(ay,e-1,"invalid unicode escape in string")d=d..ax(i)e=e+#i else if not ar[h]then av(ay,e-1,"invalid escape char '"..h.."' in string")end;d=d..af[h]end;f=e+1 elseif g==34 then d=d..ay:sub(f,e-1)return d,e+1 end;e=e+1 end;av(ay,b,"expected closing quote for string")end;local b=function(b,d)local e=au(b,d,aq)local f=b:sub(d,e-1)local g=tonumber(f)if not g then av(b,d,"invalid number '"..f.."'")end;return g,e end;local d=function(d,e)local f=au(d,e,aq)local g=d:sub(e,f-1)if not as[g]then av(d,e,"invalid literal '"..g.."'")end;return at[g],f end;local e=function(e,f)local g={}local h=1;f=f+1;while 1 do local i;f=au(e,f,ap,true)if e:sub(f,f)=="]"then f=f+1;break end;i,f=an(e,f)g[h]=i;h=h+1;f=au(e,f,ap,true)local l=e:sub(f,f)f=f+1;if l=="]"then break end;if l~=","then av(e,f,"expected ']' or ','")end end;return g,f end;local f=function(f,g)local h={}g=g+1;while 1 do local i,l;g=au(f,g,ap,true)if f:sub(g,g)=="}"then g=g+1;break end;if f:sub(g,g)~='"'then av(f,g,"expected string for key")end;i,g=an(f,g)g=au(f,g,ap,true)if f:sub(g,g)~=":"then av(f,g,"expected ':' after key")end;g=au(f,g+1,ap,true)l,g=an(f,g)h[i]=l;g=au(f,g,ap,true)local m=f:sub(g,g)g=g+1;if m=="}"then break end;if m~=","then av(f,g,"expected '}' or ','")end end;return h,g end;local g={['"']=ay,["0"]=b,["1"]=b,["2"]=b,["3"]=b,["4"]=b,["5"]=b,["6"]=b,["7"]=b,["8"]=b,["9"]=b,["-"]=b,t=d,f=d,n=d,["["]=e,["{"]=f}an=function(h,i)local l=h:sub(i,i)local m=g[l]if m then return m(h,i)end;av(h,i,"unexpected character '"..l.."'")end;local h=function(h)if type(h)~="string"then error("expected argument of type string, got "..type(h))end;local i,l=an(h,au(h,1,ap,true))l=au(h,l,ap,true)if l<=#h then av(h,l,"trailing garbage")end;return i end;
+local i,l,m=am,h,Z;
 
 
 
 
 
-local m={}
+local p={}
 
-local p=(cloneref or clonereference or function(p)return p end)
+local r=(cloneref or clonereference or function(r)return r end)
 
 
-function m.New(r,u)
+function p.New(u,v)
 
-local v=r;
 local x=u;
-local z=true;
+local z=v;
+local A=true;
 
 
-local A=function(A)end;
+local B=function(B)end;
 
 
 repeat task.wait(1)until game:IsLoaded();
 
 
-local B=false;
-local C,F,G,H,J,L,M,N,O=setclipboard or toclipboard,request or http_request or syn_request,string.char,tostring,string.sub,os.time,math.random,math.floor,gethwid or function()return p(game:GetService"Players").LocalPlayer.UserId end
-local P,Q="",0;
+local C=false;
+local F,G,H,J,L,M,N,O,P=setclipboard or toclipboard,request or http_request or syn_request,string.char,tostring,string.sub,os.time,math.random,math.floor,gethwid or function()return r(game:GetService"Players").LocalPlayer.UserId end
+local Q,R="",0;
 
 
-local R="https://api.platoboost.app";
-local S=F{
-Url=R.."/public/connectivity",
+local S="https://api.platoboost.app";
+local T=G{
+Url=S.."/public/connectivity",
 Method="GET"
 };
-if S.StatusCode~=200 and S.StatusCode~=429 then
-R="https://api.platoboost.net";
+if T.StatusCode~=200 and T.StatusCode~=429 then
+S="https://api.platoboost.net";
 end
 
 
 function cacheLink()
-if Q+(600)<L()then
-local T=F{
-Url=R.."/public/start",
+if R+(600)<M()then
+local U=G{
+Url=S.."/public/start",
 Method="POST",
-Body=h{
-service=v,
-identifier=l(O())
+Body=i{
+service=x,
+identifier=m(P())
 },
 Headers={
 ["Content-Type"]="application/json",
@@ -26603,151 +26602,151 @@ Headers={
 }
 };
 
-if T.StatusCode==200 then
-local U=i(T.Body);
+if U.StatusCode==200 then
+local V=l(U.Body);
 
-if U.success==true then
-P=U.data.url;
-Q=L();
-return true,P
+if V.success==true then
+Q=V.data.url;
+R=M();
+return true,Q
 else
-A(U.message);
-return false,U.message
+B(V.message);
+return false,V.message
 end
-elseif T.StatusCode==429 then
-local U="you are being rate limited, please wait 20 seconds and try again.";
-A(U);
-return false,U
+elseif U.StatusCode==429 then
+local V="you are being rate limited, please wait 20 seconds and try again.";
+B(V);
+return false,V
 end
 
-local U="Failed to cache link.";
-A(U);
-return false,U
+local V="Failed to cache link.";
+B(V);
+return false,V
 else
-return true,P
+return true,Q
 end
 end
 
 cacheLink();
 
 
-local T=function()
-local T=""
-for U=1,16 do
-T=T..G(N(M()*(26))+97)
-end
-return T
-end
-
-
-for U=1,5 do
-local V=T();
-task.wait(0.2)
-if T()==V then
-local W="platoboost nonce error.";
-A(W);
-error(W);
-end
-end
-
-
 local U=function()
-local U,V=cacheLink();
+local U=""
+for V=1,16 do
+U=U..H(O(N()*(26))+97)
+end
+return U
+end
 
-if U then
-C(V);
+
+for V=1,5 do
+local W=U();
+task.wait(0.2)
+if U()==W then
+local X="platoboost nonce error.";
+B(X);
+error(X);
 end
 end
 
 
-local aA=function(V)
-local W=T();
-local X=R.."/public/redeem/"..H(v);
+local V=function()
+local V,W=cacheLink();
 
-local Y={
-identifier=l(O()),
-key=V
+if V then
+F(W);
+end
+end
+
+
+local az=function(W)
+local X=U();
+local Y=S.."/public/redeem/"..J(x);
+
+local _={
+identifier=m(P()),
+key=W
 }
 
-if z then
-Y.nonce=W;
+if A then
+_.nonce=X;
 end
 
-local _=F{
-Url=X,
+local az=G{
+Url=Y,
 Method="POST",
-Body=h(Y),
+Body=i(_),
 Headers={
 ["Content-Type"]="application/json"
 }
 };
 
-if _.StatusCode==200 then
-local aA=i(_.Body);
+if az.StatusCode==200 then
+local aA=l(az.Body);
 
 if aA.success==true then
 if aA.data.valid==true then
-if z then
-if aA.data.hash==l("true".."-"..W.."-"..x)then
+if A then
+if aA.data.hash==m("true".."-"..X.."-"..z)then
 return true
 else
-A"failed to verify integrity.";
+B"failed to verify integrity.";
 return false
 end
 else
 return true
 end
 else
-A"key is invalid.";
+B"key is invalid.";
 return false
 end
 else
-if J(aA.message,1,27)=="unique constraint violation"then
-A"you already have an active key, please wait for it to expire before redeeming it.";
+if L(aA.message,1,27)=="unique constraint violation"then
+B"you already have an active key, please wait for it to expire before redeeming it.";
 return false
 else
-A(aA.message);
+B(aA.message);
 return false
 end
 end
-elseif _.StatusCode==429 then
-A"you are being rate limited, please wait 20 seconds and try again.";
+elseif az.StatusCode==429 then
+B"you are being rate limited, please wait 20 seconds and try again.";
 return false
 else
-A"server returned an invalid status code, please try again later.";
+B"server returned an invalid status code, please try again later.";
 return false
 end
 end
 
 
-local V=function(V)
-if B==true then
+local aA=function(aA)
+if C==true then
 return false,("A request is already being sent, please slow down.")
 else
-B=true;
+C=true;
 end
 
-local W=T();
-local X=R.."/public/whitelist/"..H(v).."?identifier="..l(O()).."&key="..V;
+local W=U();
+local X=S.."/public/whitelist/"..J(x).."?identifier="..m(P()).."&key="..aA;
 
-if z then
+if A then
 X=X.."&nonce="..W;
 end
 
-local Y=F{
+local Y=G{
 Url=X,
 Method="GET",
 };
 
-B=false;
+C=false;
 
 if Y.StatusCode==200 then
-local _=i(Y.Body);
+local _=l(Y.Body);
 
 if _.success==true then
 if _.data.valid==true then
-if z then
-if _.data.hash==l("true".."-"..W.."-"..x)then
+if A then
+if _.data.hash==m("true".."-"..W.."-"..z)then
 return true,""
 else
 return false,("failed to verify integrity.")
@@ -26756,8 +26755,8 @@ else
 return true
 end
 else
-if J(V,1,4)=="KEY_"then
-return true,aA(V)
+if L(aA,1,4)=="KEY_"then
+return true,az(aA)
 else
 return false,("Key is invalid.")
 end
@@ -26774,34 +26773,34 @@ end
 
 
 local aB=function(W)
-local X=T();
-local Y=R.."/public/flag/"..H(v).."?name="..W;
+local X=U();
+local Y=S.."/public/flag/"..J(x).."?name="..W;
 
-if z then
+if A then
 Y=Y.."&nonce="..X;
 end
 
-local _=F{
+local _=G{
 Url=Y,
 Method="GET",
 };
 
 if _.StatusCode==200 then
-local aB=i(_.Body);
+local aB=l(_.Body);
 
 if aB.success==true then
-if z then
-if aB.data.hash==l(H(aB.data.value).."-"..X.."-"..x)then
+if A then
+if aB.data.hash==m(J(aB.data.value).."-"..X.."-"..z)then
 return aB.data.value
 else
-A"failed to verify integrity.";
+B"failed to verify integrity.";
 return nil
 end
 else
 return aB.data.value
 end
 else
-A(aB.message);
+B(aB.message);
 return nil
 end
 else
@@ -26811,14 +26810,14 @@ end
 
 
 return{
-Verify=V,
+Verify=aA,
 GetFlag=aB,
-Copy=U,
+Copy=V,
 }
 end
 
 
-return m end function a.o()
+return p end function a.o()
 
 
 
@@ -35817,16 +35816,14 @@ return aa
 end)
 
 local ag=aa(game:GetService"UserInputService")
+local aj=aa(game:GetService"RunService")
+local al=aa(game:GetService"ContextActionService")
+local am=aa(game:GetService"HttpService")
 
-local aj=a.load'j'
-local al=aj.New
+local an=a.load'j'
+local ao=an.New
 
-local am={}
-
-
-
-
-
+local ap={}
 
 
 
@@ -35836,224 +35833,455 @@ local am={}
 
 
 
-function am.New(an,ao:ConfigType__DARKLUA_TYPE_b)
-local ap={
+
+
+
+
+
+function ap.New(aq,ar:ConfigType__DARKLUA_TYPE_b)
+local as={
 __type="Viewport",
-Object=ao.Object,
-Camera=ao.Camera or Instance.new"Camera",
-Interactive=ao.Interactive or false,
-Height=ao.Height or 200,
-Focused=ao.Focused~=false,
+Object=ar.Object,
+Camera=ar.Camera or Instance.new"Camera",
+Interactive=ar.Interactive or false,
+Height=ar.Height or 200,
+Focused=ar.Focused~=false,
 }
 
-local aq=false
-local ar=false
-local as,at=0
+local at=false
+local au=false
+local av=false
+local aw,ax=0
+local ay=false
+local az
 
-local au=aj.NewRoundFrame(ao.Window.ElementConfig.UICorner,"Squircle",{
-Size=UDim2.new(1,0,0,ap.Height),
-Parent=ao.Parent,
+local aA=10
+local aB=10
+local b=0.5
+local d=50
+local e=1.15
+local f=16
+
+local g="WindUI_ViewportWheel_"
+..(ar.WindUI and ar.WindUI.GenerateGUID and ar.WindUI.GenerateGUID()or am:GenerateGUID(false))
+local h=ar.WindUI and ar.WindUI.GenerateGUID and ar.WindUI.GenerateGUID()
+or am:GenerateGUID(false)
+
+local i=an.NewRoundFrame(ar.Window.ElementConfig.UICorner,"Squircle",{
+Size=UDim2.new(1,0,0,as.Height),
+Parent=ar.Parent,
 ThemeTag={
 ImageColor3="ViewportBackground",
 ImageTransparency="ViewportBackgroundTransparency",
 },
 },{
-al("CanvasGroup",{
+ao("CanvasGroup",{
 Size=UDim2.new(1,0,1,0),
 BackgroundTransparency=1,
 },{
-al("UICorner",{
-CornerRadius=UDim.new(0,ao.Window.ElementConfig.UICorner),
+ao("UICorner",{
+CornerRadius=UDim.new(0,ar.Window.ElementConfig.UICorner),
 }),
-al("ViewportFrame",{
+ao("ViewportFrame",{
 Name="Viewport",
 Size=UDim2.new(1,0,1,0),
 BackgroundTransparency=1,
-CurrentCamera=ap.Camera,
-Active=ap.Interactive,
+CurrentCamera=as.Camera,
+Active=as.Interactive,
 },{
-ap.Object,
-ap.Camera,
+as.Object,
+as.Camera,
 }),
 }),
 })
 
-local function IsTouchInsideViewport(av)
-local aw=au.CanvasGroup.Viewport.AbsolutePosition
-local ax=au.CanvasGroup.Viewport.AbsoluteSize
+local function IsPositionInsideViewport(l)
+local m=i.CanvasGroup.Viewport.AbsolutePosition
+local p=i.CanvasGroup.Viewport.AbsoluteSize
 
-return av.X>=aw.X
-and av.X<=aw.X+ax.X
-and av.Y>=aw.Y
-and av.Y<=aw.Y+ax.Y
+return l.X>=m.X
+and l.X<=m.X+p.X
+and l.Y>=m.Y
+and l.Y<=m.Y+p.Y
 end
 
-local av=ao.WindUI.GenerateGUID()
-
-aj.AddSignal(au.CanvasGroup.Viewport.MouseEnter,function()
-if ap.Interactive then
-ao.Tab.UIElements.ContainerFrame.ScrollingEnabled=false
+local function BindWheelSink()
+if ay then
+return
 end
+ay=true
+al:BindActionAtPriority(
+g,
+function()
+return Enum.ContextActionResult.Sink
+end,
+false,
+Enum.ContextActionPriority.High.Value,
+Enum.UserInputType.MouseWheel
+)
+end
+
+local function UnbindWheelSink()
+if not ay then
+return
+end
+ay=false
+pcall(function()
+al:UnbindAction(g)
 end)
-
-aj.AddSignal(au.CanvasGroup.Viewport.InputEnded,function(aw)
-if
-aw.UserInputType==Enum.UserInputType.MouseMovement
-or aw.UserInputType==Enum.UserInputType.Touch
-then
-ao.Tab.UIElements.ContainerFrame.ScrollingEnabled=true
 end
-end)
 
-aj.AddSignal(au.CanvasGroup.Viewport.InputBegan,function(aw)
-if ap.Interactive then
-if
-(aw.UserInputType==Enum.UserInputType.MouseButton1)
-or(aw.UserInputType==Enum.UserInputType.Touch and not ar)
-then
-if ao.WindUI.CurrentInput and ao.WindUI.CurrentInput~=av then
+local function GetScrollingFrame()
+if ar.Tab and ar.Tab.UIElements and ar.Tab.UIElements.ContainerFrame then
+return ar.Tab.UIElements.ContainerFrame
+end
+return i:FindFirstAncestorWhichIsA"ScrollingFrame"
+end
+
+local function UpdateScrollLock()
+local l=as.Interactive and(av or at or au)
+local m=GetScrollingFrame()
+
+if l then
+if m then
+m.ScrollingEnabled=false
+end
+BindWheelSink()
+else
+if m then
+m.ScrollingEnabled=true
+end
+UnbindWheelSink()
+end
+end
+
+local function GetModelBounds()
+if not as.Object then
+return Vector3.new(2,2,2),2
+end
+local l=(as.Object:IsA"BasePart"and as.Object.Size)
+or(as.Object:IsA"Model"and select(2,as.Object:GetBoundingBox()))
+or Vector3.new(2,2,2)
+local m=math.max(0.1,l.X,l.Y,l.Z)
+return l,m
+end
+
+local function UpdateDistanceLimits()local
+l, m=GetModelBounds()
+b=math.max(m*0.35,0.4)
+d=math.max(m*8,10)
+end
+
+local function StartZoomAnimation()
+if az then
 return
 end
 
-ao.WindUI.CurrentInput=av
-
-aq=true
-at=aw.Position
+az=aj.RenderStepped:Connect(function(l)
+if not as.Object or not as.Camera then
+if az then
+az:Disconnect()
+az=nil
 end
-end
-end)
-
-aj.AddSignal(ag.InputEnded,function(aw)
-if ap.Interactive then
-if
-aw.UserInputType==Enum.UserInputType.MouseButton1
-or aw.UserInputType==Enum.UserInputType.Touch
-then
-if ao.WindUI.CurrentInput and ao.WindUI.CurrentInput~=av then
 return
 end
 
-ao.WindUI.CurrentInput=nil
+local m=1-math.exp(-f*l)
+aA=aA+(aB-aA)*m
 
-aq=false
+if math.abs(aA-aB)<0.005 then
+aA=aB
+if az then
+az:Disconnect()
+az=nil
 end
 end
+
+local p=as.Object:GetPivot().Position
+local r=as.Camera.CFrame.Position
+local u=r-p
+local v=u.Magnitude
+local x=if v>0.0001 then(u/v)else(-as.Camera.CFrame.LookVector)
+
+local z=p+x*aA
+as.Camera.CFrame=CFrame.new(z)*as.Camera.CFrame.Rotation
 end)
-
-aj.AddSignal(ag.InputChanged,function(aw)
-if ap.Interactive and aq and not ar then
-if
-aw.UserInputType==Enum.UserInputType.MouseMovement
-or aw.UserInputType==Enum.UserInputType.Touch
-then
-local ax=aw.Position-at
-at=aw.Position
-
-local ay=ap.Object:GetPivot().Position
-local az=ap.Camera
-
-local aA=CFrame.fromAxisAngle(Vector3.new(0,1,0),-ax.X*0.02)
-az.CFrame=CFrame.new(ay)*aA*CFrame.new(-ay)*az.CFrame
-
-local aB=CFrame.fromAxisAngle(az.CFrame.RightVector,-ax.Y*0.02)
-local b=CFrame.new(ay)*aB*CFrame.new(-ay)*az.CFrame
-
-if b.UpVector.Y>0.1 then
-az.CFrame=b
 end
-end
-end
-end)
 
-aj.AddSignal(au.CanvasGroup.Viewport.InputChanged,function(aw)
-if ap.Interactive then
-if aw.UserInputType==Enum.UserInputType.MouseWheel then
-local ax=aw.Position.Z*2
-ap.Camera.CFrame+=ap.Camera.CFrame.LookVector*ax
-end
-end
-end)
-
-aj.AddSignal(ag.TouchPinch,function(aw,ax,ay,az)
-if not IsTouchInsideViewport(aw[1])or not IsTouchInsideViewport(aw[2])then
+local function ApplyZoom(l)
+if not as.Interactive or not as.Object then
 return
 end
-if ap.Interactive then
-if az==Enum.UserInputState.Begin then
-ar=true
-aq=false
-as=(aw[1]-aw[2]).Magnitude
-elseif az==Enum.UserInputState.Change then
-if ar then
-local aA=(aw[1]-aw[2]).Magnitude
-local aB=(aA-as)*0.03
-as=aA
-ap.Camera.CFrame+=ap.Camera.CFrame.LookVector*aB
-end
-elseif az==Enum.UserInputState.End or az==Enum.UserInputState.Cancel then
-ar=false
+
+UpdateDistanceLimits()
+
+if not az then
+local m=as.Object:GetPivot().Position
+local p=(as.Camera.CFrame.Position-m).Magnitude
+if p>0.001 then
+aA=p
+aB=p
 end
 end
-end)
+
+local m=(e)^(-l)
+aB=math.clamp(aB*m,b,d)
+
+StartZoomAnimation()
+end
 
 local function FocusCamera()
-if not ap.Object then
+if not as.Object then
+return
+end local
+l, m=GetModelBounds()
+local p=m*2
+local r=as.Object:GetPivot().Position
+
+as.Camera.CFrame=
+CFrame.new(r+Vector3.new(0,m/2,p),r)
+
+UpdateDistanceLimits()
+aA=(as.Camera.CFrame.Position-r).Magnitude
+aB=aA
+
+if az then
+az:Disconnect()
+az=nil
+end
+end
+
+if as.Focused and as.Object then
+FocusCamera()
+else
+UpdateDistanceLimits()
+end
+
+
+an.AddSignal(i.CanvasGroup.Viewport.MouseEnter,function()
+if as.Interactive then
+av=true
+UpdateScrollLock()
+end
+end)
+
+an.AddSignal(i.CanvasGroup.Viewport.MouseLeave,function()
+av=false
+UpdateScrollLock()
+end)
+
+
+an.AddSignal(i.CanvasGroup.Viewport.InputBegan,function(l)
+if as.Interactive then
+if
+(l.UserInputType==Enum.UserInputType.MouseButton1)
+or(l.UserInputType==Enum.UserInputType.Touch and not au)
+then
+if ar.WindUI.CurrentInput and ar.WindUI.CurrentInput~=h then
 return
 end
-local aw=ap.Object:IsA"BasePart"and ap.Object.Size
-or select(2,ap.Object:GetBoundingBox())
-local ax=math.max(aw.X,aw.Y,aw.Z)
-local ay=ax*2
-local az=ap.Object:GetPivot().Position
 
-ap.Camera.CFrame=
-CFrame.new(az+Vector3.new(0,ax/2,ay),az)
+ar.WindUI.CurrentInput=h
+
+at=true
+ax=l.Position
+UpdateScrollLock()
+end
+end
+end)
+
+an.AddSignal(ag.InputEnded,function(l)
+if as.Interactive then
+if
+l.UserInputType==Enum.UserInputType.MouseButton1
+or l.UserInputType==Enum.UserInputType.Touch
+then
+if ar.WindUI.CurrentInput and ar.WindUI.CurrentInput~=h then
+return
 end
 
-if ap.Focused and ap.Object then
+ar.WindUI.CurrentInput=nil
+
+at=false
+if l.UserInputType==Enum.UserInputType.MouseButton1 then
+av=IsPositionInsideViewport(l.Position)
+else
+av=false
+end
+UpdateScrollLock()
+end
+end
+end)
+
+an.AddSignal(ag.InputChanged,function(l)
+if l.UserInputType==Enum.UserInputType.MouseMovement then
+
+if av and not at and not IsPositionInsideViewport(l.Position)then
+av=false
+UpdateScrollLock()
+end
+end
+
+if as.Interactive and at and not au then
+if
+l.UserInputType==Enum.UserInputType.MouseMovement
+or l.UserInputType==Enum.UserInputType.Touch
+then
+local m=l.Position-ax
+ax=l.Position
+
+local p=as.Object:GetPivot().Position
+local r=as.Camera
+
+local u=CFrame.fromAxisAngle(Vector3.new(0,1,0),-m.X*0.02)
+r.CFrame=CFrame.new(p)*u*CFrame.new(-p)*r.CFrame
+
+local v=CFrame.fromAxisAngle(r.CFrame.RightVector,-m.Y*0.02)
+local x=CFrame.new(p)*v*CFrame.new(-p)*r.CFrame
+
+if x.UpVector.Y>0.1 then
+r.CFrame=x
+end
+end
+end
+end)
+
+
+an.AddSignal(i.CanvasGroup.Viewport.InputChanged,function(l)
+if as.Interactive and l.UserInputType==Enum.UserInputType.MouseWheel then
+ApplyZoom(l.Position.Z)
+end
+end)
+
+
+an.AddSignal(ag.TouchPinch,function(l,m,p,r)
+if not IsPositionInsideViewport(l[1])or not IsPositionInsideViewport(l[2])then
+return
+end
+if as.Interactive then
+if r==Enum.UserInputState.Begin then
+au=true
+at=false
+UpdateScrollLock()
+aw=(l[1]-l[2]).Magnitude
+elseif r==Enum.UserInputState.Change then
+if au and aw>0 then
+local u=(l[1]-l[2]).Magnitude
+local v=u/math.max(aw,0.001)
+aw=u
+
+if v>0 then
+aB=math.clamp(aB/v,b,d)
+StartZoomAnimation()
+end
+end
+elseif r==Enum.UserInputState.End or r==Enum.UserInputState.Cancel then
+au=false
+UpdateScrollLock()
+end
+end
+end)
+
+
+an.AddSignal(ag.WindowFocusReleased,function()
+if av or at then
+av=false
+at=false
+UpdateScrollLock()
+end
+end)
+
+an.AddSignal(i.Destroying,function()
+av=false
+at=false
+au=false
+UpdateScrollLock()
+
+if az then
+az:Disconnect()
+az=nil
+end
+end)
+
+function as.SetObject(l,m,p)
+if p then
+m=m:Clone()
+end
+if as.Object then
+as.Object:Destroy()
+end
+
+as.Object=m
+as.Object.Parent=i.CanvasGroup.Viewport
+
+if as.Focused and as.Object then
+FocusCamera()
+else
+UpdateDistanceLimits()
+end
+end
+
+function as.SetHeight(l,m)
+i.Size=UDim2.new(1,0,0,m)
+end
+
+function as.Focus(l)
+if as.Object then
 FocusCamera()
 end
-
-function ap.SetObject(aw,ax,ay)
-if ay then
-ax=ax:Clone()
-end
-if ap.Object then
-ap.Object:Destroy()
 end
 
-ap.Object=ax
-ap.Object.Parent=au.CanvasGroup.Viewport
-end
-
-function ap.SetHeight(aw,ax)
-au.Size=UDim2.new(1,0,0,ax)
-end
-
-function ap.Focus(aw)
-if ap.Object then
-FocusCamera()
+function as.SetCamera(l,m)
+as.Camera=m
+i.CanvasGroup.Viewport.CurrentCamera=m
+if as.Object then
+local p=as.Object:GetPivot().Position
+aA=(m.CFrame.Position-p).Magnitude
+aB=aA
 end
 end
 
-function ap.SetCamera(aw,ax)
-ap.Camera=ax
-au.CanvasGroup.Viewport.CurrentCamera=ax
+function as.SetInteractive(l,m)
+as.Interactive=m
+i.CanvasGroup.Viewport.Active=m
+if not m then
+av=false
+at=false
+au=false
+if az then
+az:Disconnect()
+az=nil
+end
+end
+UpdateScrollLock()
 end
 
-function ap.SetInteractive(aw,ax)
-ap.Interactive=ax
-au.CanvasGroup.Viewport.Active=ax
+function as.Destroy(l)
+av=false
+at=false
+au=false
+UpdateScrollLock()
+
+if az then
+az:Disconnect()
+az=nil
 end
 
-ap.Main=au
-ap.ElementFrame=au
-ap.UIElements={Main=au}
-
-return ap.__type,ap
+if as.Object then
+as.Object:Destroy()
 end
 
-return am end function a.ag()
+i:Destroy()
+end
+
+as.Main=i
+as.ElementFrame=i
+as.UIElements={Main=i}
+
+return as.__type,as
+end
+
+return ap end function a.ag()
 
 return{
 Elements={
@@ -39230,8 +39458,8 @@ H=not ay.Dynamic3DRender
 end
 ay.Dynamic3DRender=H
 return aw.Set(ay.UIElements.Main,H,{
-MaxTiltAngle=ax.Dynamic3DTilt or 8,
-Responsiveness=ax.Dynamic3DSmoothness or 12,
+MaxTiltAngle=ax.Dynamic3DTilt or 5,
+Responsiveness=ax.Dynamic3DSmoothness or 18,
 },J)
 end
 
