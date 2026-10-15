@@ -9,7 +9,6 @@ end)
 local RunService = cloneref(game:GetService("RunService"))
 local UserInputService = cloneref(game:GetService("UserInputService"))
 local TweenService = cloneref(game:GetService("TweenService"))
-local GuiService = cloneref(game:GetService("GuiService"))
 local Players = cloneref(game:GetService("Players"))
 local CoreGui = cloneref(game:GetService("CoreGui"))
 local Workspace = cloneref(game:GetService("Workspace"))
@@ -209,6 +208,7 @@ function Dynamic3D.Set(menuFrame: GuiObject, enabled: boolean, options: Dynamic3
 		local offsetStudsX = (frameCenterX - vp.X / 2) * pixelSizeX
 		local offsetStudsY = (vp.Y / 2 - frameCenterY) * pixelSizeY
 		local pivotLocal = Vector3.new(offsetStudsX, offsetStudsY, -distance)
+		local halfThickness = part.Size.Z / 2
 
 		if session.Exiting then
 			session.ExitElapsed = session.ExitElapsed + dt
@@ -221,7 +221,7 @@ function Dynamic3D.Set(menuFrame: GuiObject, enabled: boolean, options: Dynamic3
 			session.CurrentRotY = currentRotY
 
 			local rotCFrame = CFrame.Angles(currentRotX, currentRotY, 0)
-			local partLocalCFrame = CFrame.new(pivotLocal) * rotCFrame * CFrame.new(-offsetStudsX, -offsetStudsY, 0)
+			local partLocalCFrame = CFrame.new(pivotLocal) * rotCFrame * CFrame.new(-offsetStudsX, -offsetStudsY, -halfThickness)
 			part.CFrame = currentCam.CFrame * partLocalCFrame
 
 			if progress >= 1 then
@@ -230,9 +230,8 @@ function Dynamic3D.Set(menuFrame: GuiObject, enabled: boolean, options: Dynamic3
 			return
 		end
 
-		-- Screen cursor with Topbar GuiInset correction
-		local guiInset = GuiService:GetGuiInset()
-		local mousePos = UserInputService:GetMouseLocation() - guiInset
+		-- Screen cursor in viewport coordinates (matches SurfaceGui CanvasSize starting at (0, 0))
+		local mousePos = UserInputService:GetMouseLocation()
 
 		local relX = mousePos.X - frameCenterX
 		local relY = frameCenterY - mousePos.Y
@@ -249,9 +248,9 @@ function Dynamic3D.Set(menuFrame: GuiObject, enabled: boolean, options: Dynamic3
 			influence = t * t * (3 - 2 * t)
 		end
 
-		-- Soften tilt when mouse button is held down to prevent drag/toggle accidental jitter
+		-- Lock tilt and level smoothly to 0 when mouse button is held down (clicks, sliders, dragging)
 		if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
-			influence = influence * 0.7
+			influence = 0
 		end
 
 		local normX = 0
@@ -274,9 +273,9 @@ function Dynamic3D.Set(menuFrame: GuiObject, enabled: boolean, options: Dynamic3
 		session.CurrentRotX = currentRotX
 		session.CurrentRotY = currentRotY
 
-		-- Apply rotated CFrame around the window center pivot
+		-- Apply rotated CFrame around the window center pivot on the SurfaceGui face
 		local rotCFrame = CFrame.Angles(currentRotX, currentRotY, 0)
-		local partLocalCFrame = CFrame.new(pivotLocal) * rotCFrame * CFrame.new(-offsetStudsX, -offsetStudsY, 0)
+		local partLocalCFrame = CFrame.new(pivotLocal) * rotCFrame * CFrame.new(-offsetStudsX, -offsetStudsY, -halfThickness)
 		part.CFrame = currentCam.CFrame * partLocalCFrame
 	end)
 

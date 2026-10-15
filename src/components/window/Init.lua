@@ -1555,8 +1555,8 @@ return function(Config)
 		end
 		Window.Dynamic3DRender = Value
 		return Dynamic3D.Set(Window.UIElements.Main, Value, {
-			MaxTiltAngle = Config.Dynamic3DTilt or 8,
-			Responsiveness = Config.Dynamic3DSmoothness or 12,
+			MaxTiltAngle = Config.Dynamic3DTilt or 5,
+			Responsiveness = Config.Dynamic3DSmoothness or 18,
 		}, immediate)
 	end
 
