@@ -59,6 +59,7 @@ function Element:New(Config: ConfigType)
 				Active = Viewport.Interactive,
 			}, {
 				Viewport.Object,
+				Viewport.Camera,
 			}),
 		}),
 	})
@@ -182,8 +183,11 @@ function Element:New(Config: ConfigType)
 	end)
 
 	local function FocusCamera()
+		if not Viewport.Object then
+			return
+		end
 		local ModelSize = Viewport.Object:IsA("BasePart") and Viewport.Object.Size
-			or select(2, Viewport.Object:GetBoundingBox(0))
+			or select(2, Viewport.Object:GetBoundingBox())
 		local MaxExtent = math.max(ModelSize.X, ModelSize.Y, ModelSize.Z)
 		local CameraDistance = MaxExtent * 2
 		local ModelPosition = Viewport.Object:GetPivot().Position
@@ -192,7 +196,7 @@ function Element:New(Config: ConfigType)
 			CFrame.new(ModelPosition + Vector3.new(0, MaxExtent / 2, CameraDistance), ModelPosition)
 	end
 
-	if Viewport.Focused then
+	if Viewport.Focused and Viewport.Object then
 		FocusCamera()
 	end
 
@@ -229,6 +233,8 @@ function Element:New(Config: ConfigType)
 	end
 
 	Viewport.Main = Main
+	Viewport.ElementFrame = Main
+	Viewport.UIElements = { Main = Main }
 
 	return Viewport.__type, Viewport
 end

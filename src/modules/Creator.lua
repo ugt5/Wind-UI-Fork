@@ -837,6 +837,9 @@ function Creator.Image(Img, Name, Corner, Folder, Type, IsThemeTag, Themed, Them
 end
 
 function Creator.Color3ToHSB(color)
+	if not color or typeof(color) ~= "Color3" then
+		return { h = 0, s = 0, b = 0 }
+	end
 	local r, g, b = color.R, color.G, color.B
 	local max = math.max(r, g, b)
 	local min = math.min(r, g, b)
@@ -867,6 +870,9 @@ function Creator.Color3ToHSB(color)
 end
 
 function Creator.GetPerceivedBrightness(color)
+	if not color or typeof(color) ~= "Color3" then
+		return 0
+	end
 	local r = color.R
 	local g = color.G
 	local b = color.B
@@ -874,6 +880,9 @@ function Creator.GetPerceivedBrightness(color)
 end
 
 function Creator.GetTextColorForHSB(color, contrast)
+	if not color or typeof(color) ~= "Color3" then
+		return Color3.new(1, 1, 1)
+	end
 	local hsb = Creator.Color3ToHSB(color)
 	local h, s, b = hsb.h, hsb.s, hsb.b
 	if Creator.GetPerceivedBrightness(color) > (contrast or 0.5) then

@@ -71,7 +71,8 @@ function Element:New(Config)
 				end
 
 				if Element.ElementFrame then
-					Element.ElementFrame.Size = UDim2.new(ElementWidthScale, Offset, 1, 0)
+					local currentY = Element.ElementFrame.Size.Y
+					Element.ElementFrame.Size = UDim2.new(ElementWidthScale, Offset, currentY.Scale, currentY.Offset)
 				end
 			end
 		end,

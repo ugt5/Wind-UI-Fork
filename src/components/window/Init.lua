@@ -49,7 +49,7 @@ return function(Config)
 		MinSize = Config.MinSize or Vector2.new(560, 350),
 		MaxSize = Config.MaxSize or Vector2.new(math.huge, math.huge),
 
-		TopBarButtonIconSize = Config.TopBarButtonIconSize,
+		TopBarButtonIconSize = Config.TopBarButtonIconSize or 16,
 
 		ToggleKey = Config.ToggleKey,
 		ElementsRadius = Config.ElementsRadius,
@@ -282,7 +282,7 @@ return function(Config)
 	end
 
 	Window.UIElements.MainBar = New("Frame", {
-		Size = UDim2.new(1, -Window.UIElements.SideBarContainer.AbsoluteSize.X, 1, -Window.Topbar.Height),
+		Size = UDim2.new(1, -Window.SideBarWidth, 1, -Window.Topbar.Height),
 		Position = UDim2.new(1, 0, 1, 0),
 		AnchorPoint = Vector2.new(1, 1),
 		BackgroundTransparency = 1,
@@ -351,7 +351,7 @@ return function(Config)
 		UserIcon = New("TextButton", {
 			Size = UDim2.new(
 				0,
-				Window.UIElements.SideBarContainer.AbsoluteSize.X - (Window.UIPadding / 2),
+				Window.SideBarWidth - (Window.UIPadding / 2),
 				0,
 				42 + Window.UIPadding
 			),
@@ -902,6 +902,10 @@ return function(Config)
 	end
 
 	function Window:CreateTopbarButton(Name, Icon, Callback, LayoutOrder, IconThemed, Color, IconSize)
+		LayoutOrder = LayoutOrder or 0
+		local finalIconSize = IconSize or Window.TopBarButtonIconSize or (Window.Topbar.ButtonsType == "Mac" and 9 or 16)
+		local buttonColor = Color or (Window.Topbar.ButtonsType ~= "Default" and Color3.fromHex("#3b82f6") or nil)
+
 		local IconFrame = Creator.Image(
 			Icon,
 			Icon,
@@ -913,14 +917,14 @@ return function(Config)
 			"WindowTopbarButtonIcon"
 		)
 		IconFrame.Size = Window.Topbar.ButtonsType == "Default"
-				and UDim2.new(0, IconSize or Window.TopBarButtonIconSize, 0, IconSize or Window.TopBarButtonIconSize)
+				and UDim2.new(0, finalIconSize, 0, finalIconSize)
 			or UDim2.new(0, 0, 0, 0)
 		IconFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 		IconFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 		IconFrame.ImageLabel.ImageTransparency = Window.Topbar.ButtonsType == "Default" and 0 or 1
 
-		if Window.Topbar.ButtonsType ~= "Default" then
-			IconFrame.ImageLabel.ImageColor3 = Creator.GetTextColorForHSB(Color)
+		if Window.Topbar.ButtonsType ~= "Default" and buttonColor then
+			IconFrame.ImageLabel.ImageColor3 = Creator.GetTextColorForHSB(buttonColor)
 		end
 
 		local Button = Creator.NewRoundFrame(
@@ -930,13 +934,13 @@ return function(Config)
 				Size = Window.Topbar.ButtonsType == "Default"
 						and UDim2.new(0, Window.Topbar.Height - 16, 0, Window.Topbar.Height - 16)
 					or UDim2.new(0, 14, 0, 14),
-				LayoutOrder = LayoutOrder or 999,
+				LayoutOrder = LayoutOrder,
 				--Parent = Window.Topbar.ButtonsType == "Default" and Window.UIElements.Main.Main.Topbar.Right or nil,
 				--Active = true,
 				ZIndex = 9999,
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				Position = UDim2.new(0.5, 0, 0.5, 0),
-				ImageColor3 = Window.Topbar.ButtonsType ~= "Default" and (Color or Color3.fromHex("#ff3030")) or nil,
+				ImageColor3 = Window.Topbar.ButtonsType ~= "Default" and buttonColor or nil,
 				ThemeTag = Window.Topbar.ButtonsType == "Default" and {
 					ImageColor3 = "Text",
 				} or nil,
@@ -1002,9 +1006,9 @@ return function(Config)
 				Tween(IconFrame, 0.1, {
 					Size = UDim2.new(
 						0,
-						IconSize or Window.TopBarButtonIconSize,
+						finalIconSize,
 						0,
-						IconSize or Window.TopBarButtonIconSize
+						finalIconSize
 					),
 				}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
 			end

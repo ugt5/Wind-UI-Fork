@@ -43,7 +43,7 @@ function DialogModule.Create(Key, Type, Window, WindUI, Parent)
 				or (Window and Window.UIElements and Window.UIElements.Main and Window.UIElements.Main.Main),
 		}, {
 			New("UICorner", {
-				CornerRadius = UDim.new(0, Window.UICorner),
+				CornerRadius = UDim.new(0, Window and Window.UICorner or 16),
 			}),
 		})
 	end

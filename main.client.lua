@@ -113,6 +113,7 @@ Window.Topbar:Button({
 	Icon = "solar:question-circle-bold",
 	LayoutOrder = 1,
 	IconThemed = true,
+	Color = Color3.fromHex("#3b82f6"),
 	Callback = function()
 		WindUI:Notify({
 			Title = "WindUI Fork",
@@ -267,7 +268,9 @@ end
 local function tableToClipboard(luau_table, indent)
 	indent = indent or 4
 	local jsonString = parseJSON(luau_table, indent)
-	setclipboard(jsonString)
+	if setclipboard then
+		setclipboard(jsonString)
+	end
 	return jsonString
 end
 
@@ -339,17 +342,22 @@ do
 			Window:Destroy()
 		end,
 	})
+
+	AboutTab:Select()
 end
 
 -- */  Elements Section  /* --
 local ElementsSection = Window:Section({
 	Title = "Elements",
+	Opened = true,
 })
 local ConfigUsageSection = Window:Section({
 	Title = "Config Usage",
+	Opened = true,
 })
 local OtherSection = Window:Section({
 	Title = "Other",
+	Opened = true,
 })
 
 -- */  Overview Tab  /* --
@@ -874,7 +882,11 @@ do
 		AllowNone = true,
 		Multi = true,
 		Callback = function(selectedValue)
-			print("Selected: " .. selectedValue)
+			if type(selectedValue) == "table" then
+				print("Selected: " .. table.concat(selectedValue, ", "))
+			else
+				print("Selected: " .. tostring(selectedValue))
+			end
 		end,
 	})
 
@@ -1262,7 +1274,7 @@ do
 end
 
 -- */  Config Usage  /* --
-if not RunService:IsStudio() and writefile and printidentity() then
+if not RunService:IsStudio() and writefile and readfile then
 	do -- config elements
 		local ConfigElementsTab = ConfigUsageSection:Tab({
 			Title = "Config Elements",
@@ -1522,7 +1534,7 @@ if not RunService:IsStudio() and writefile and printidentity() then
 			Icon = "",
 			Justify = "Center",
 			Callback = function()
-				print(HttpService:JSONDecode(ConfigManager:GetAutoLoadConfigs()))
+				print(HttpService:JSONEncode(ConfigManager:GetAutoLoadConfigs()))
 			end,
 		})
 	end
@@ -1533,15 +1545,22 @@ do
 	local InviteCode = "ftgs-development-hub-1300692552005189632"
 	local DiscordAPI = "https://discord.com/api/v10/invites/" .. InviteCode .. "?with_counts=true&with_expiration=true"
 
-	local Response = WindUI.cloneref(game:GetService("HttpService"))
-		:JSONDecode(WindUI.Creator.Request and WindUI.Creator.Request({
-			Url = DiscordAPI,
-			Method = "GET",
-			Headers = {
-				["User-Agent"] = "WindUI/Example",
-				["Accept"] = "application/json",
-			},
-		}).Body or "{}")
+	local Response = {}
+	if WindUI.Creator.Request and not RunService:IsStudio() then
+		pcall(function()
+			local req = WindUI.Creator.Request({
+				Url = DiscordAPI,
+				Method = "GET",
+				Headers = {
+					["User-Agent"] = "WindUI/Example",
+					["Accept"] = "application/json",
+				},
+			})
+			if req and req.Body then
+				Response = WindUI.cloneref(game:GetService("HttpService")):JSONDecode(req.Body)
+			end
+		end)
+	end
 
 	local DiscordTab = OtherSection:Tab({
 		Title = "Discord",

@@ -4,8 +4,9 @@ local New = Creator.New
 local Element = {}
 
 function Element:New(Config)
+    local isHorizontal = Config.ParentType ~= "Group" and Config.ParentType ~= "HStack"
     local Divider = New("Frame", {
-        Size = Config.ParentType ~= "Group" and UDim2.new(1,0,0,1) or UDim2.new(0,1,1,0),
+        Size = isHorizontal and UDim2.new(1,0,0,1) or UDim2.new(0,1,1,0),
         Position = UDim2.new(0.5,0,0.5,0),
         AnchorPoint = Vector2.new(0.5,0.5),
         BackgroundTransparency = .9,
@@ -15,7 +16,7 @@ function Element:New(Config)
     })
     local MainDivider = New("Frame", {
         Parent = Config.Parent,
-        Size = Config.ParentType ~= "Group" and UDim2.new(1,-7,0,7) or UDim2.new(0,7,1,-7),
+        Size = isHorizontal and UDim2.new(1,-7,0,7) or UDim2.new(0,7,1,-7),
         BackgroundTransparency = 1,
     }, {
         Divider

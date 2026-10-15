@@ -100,14 +100,16 @@ return {
 
 						table.remove(Window.AllElements, config.GlobalIndex)
 						table.remove(tbl.Elements, config.Index)
-						table.remove(Tab.Elements, config.Index)
+						if Tab and Tab == tbl then
+							table.remove(Tab.Elements, config.Index)
+						end
 						tbl:UpdateAllElementShapes(tbl)
 					end
 				end
 
-				Window.AllElements[config.Index] = content
+				Window.AllElements[config.GlobalIndex] = content
 				tbl.Elements[config.Index] = content
-				if Tab then
+				if Tab and Tab == tbl then
 					Tab.Elements[config.Index] = content
 				end
 

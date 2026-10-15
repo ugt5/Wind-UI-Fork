@@ -574,6 +574,14 @@ function TabModule.New(Config, UIScale)
 		end)
 	end)
 
+	if TabIndex == 1 or TabModule.SelectedTab == nil then
+		task.defer(function()
+			if TabModule.SelectedTab == nil and not Tab.Locked then
+				Tab:Select()
+			end
+		end)
+	end
+
 	return Tab
 end
 

@@ -183,7 +183,7 @@ function Code.New(Code, Window, Parent, Callback, UIScale)
 
 	Creator.AddSignal(TextLabel:GetPropertyChangedSignal("TextBounds"), function()
 		if Code.Height ~= nil then
-			ScrollingFrame.Size = UDim2.new(1, 0, 1, Code.Title ~= nil and -(20 + (CodeModule.Padding * 2)) or nil)
+			ScrollingFrame.Size = UDim2.new(1, 0, 1, Code.Title ~= nil and -(20 + (CodeModule.Padding * 2)) or 0)
 		else
 			ScrollingFrame.Size =
 				UDim2.new(1, 0, 0, (TextLabel.TextBounds.Y / (UIScale or 1)) + ((CodeModule.Padding + 3) * 2))

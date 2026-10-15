@@ -12,7 +12,7 @@ function PopupModule.new(PopupConfig, Parent)
         Icon = PopupConfig.Icon,
         IconThemed = PopupConfig.IconThemed,
         Thumbnail = PopupConfig.Thumbnail,
-        Buttons = PopupConfig.Buttons,
+        Buttons = PopupConfig.Buttons or {},
         
         IconSize = 22,
     }
