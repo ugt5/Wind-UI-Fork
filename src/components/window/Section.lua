@@ -20,6 +20,9 @@ function Section.New(SectionConfig, Parent, Folder, UIScale, Window)
         Expandable = false,
     }
     
+    local CurrentTween = nil
+    local CloseTweenConn = nil
+    
     local IconFrame
     if SectionModule.Icon then
         IconFrame = Creator.Image(
@@ -105,13 +108,14 @@ function Section.New(SectionConfig, Parent, Folder, UIScale, Window)
             Size = UDim2.new(1,0,0,0),
             AutomaticSize = "Y",
             Name = "Content",
-            Visible = true,
+            Visible = SectionModule.Opened,
+            ClipsDescendants = true,
             Position = UDim2.new(0,0,0,SectionModule.HeaderSize)
         }, {
             New("UIListLayout", {
                 FillDirection = "Vertical",
                 Padding = UDim.new(0,Window.Gap),
-                VerticalAlignment = "Bottom",
+                VerticalAlignment = "Top",
             }),
         })
     })
@@ -129,9 +133,26 @@ function Section.New(SectionConfig, Parent, Folder, UIScale, Window)
     function SectionModule:Open()
         if SectionModule.Expandable then
             SectionModule.Opened = true
-            Tween(SectionFrame, 0.33, {
-                Size = UDim2.new(1,0,0, SectionModule.HeaderSize + (SectionFrame.Content.AbsoluteSize.Y/UIScale))
-            }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+            SectionFrame.Content.Visible = true
+
+            if CloseTweenConn then
+                CloseTweenConn:Disconnect()
+                CloseTweenConn = nil
+            end
+            if CurrentTween then
+                CurrentTween:Cancel()
+                CurrentTween = nil
+            end
+
+            local contentHeight = SectionFrame.Content.UIListLayout.AbsoluteContentSize.Y
+            if contentHeight == 0 then
+                contentHeight = SectionFrame.Content.AbsoluteSize.Y
+            end
+
+            CurrentTween = Tween(SectionFrame, 0.33, {
+                Size = UDim2.new(1,0,0, SectionModule.HeaderSize + (contentHeight/UIScale))
+            }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+            CurrentTween:Play()
             
             Tween(ChevronIconFrame.ImageLabel, 0.1, {Rotation = 180}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
         end
@@ -139,9 +160,31 @@ function Section.New(SectionConfig, Parent, Folder, UIScale, Window)
     function SectionModule:Close()
         if SectionModule.Expandable then
             SectionModule.Opened = false
-            Tween(SectionFrame, 0.26, {
+
+            if CloseTweenConn then
+                CloseTweenConn:Disconnect()
+                CloseTweenConn = nil
+            end
+            if CurrentTween then
+                CurrentTween:Cancel()
+                CurrentTween = nil
+            end
+
+            CurrentTween = Tween(SectionFrame, 0.26, {
                 Size = UDim2.new(1,0,0, SectionModule.HeaderSize)
-            }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+            }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+
+            CloseTweenConn = CurrentTween.Completed:Connect(function(playbackState)
+                if CloseTweenConn then
+                    CloseTweenConn:Disconnect()
+                    CloseTweenConn = nil
+                end
+                if playbackState == Enum.PlaybackState.Completed and not SectionModule.Opened then
+                    SectionFrame.Content.Visible = false
+                end
+            end)
+
+            CurrentTween:Play()
             Tween(ChevronIconFrame.ImageLabel, 0.1, {Rotation = 0}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
         end
     end

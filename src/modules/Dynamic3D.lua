@@ -1,5 +1,6 @@
 -- /* src/modules/Dynamic3D.lua */
 -- Dynamic 3D tilt perspective rendering for WindUI frames
+-- Window-centric pivot with SDF falloff and click-accurate hitboxes
 
 local cloneref = (cloneref or clonereference or function(instance)
 	return instance
@@ -8,6 +9,7 @@ end)
 local RunService = cloneref(game:GetService("RunService"))
 local UserInputService = cloneref(game:GetService("UserInputService"))
 local TweenService = cloneref(game:GetService("TweenService"))
+local GuiService = cloneref(game:GetService("GuiService"))
 local Players = cloneref(game:GetService("Players"))
 local CoreGui = cloneref(game:GetService("CoreGui"))
 local Workspace = cloneref(game:GetService("Workspace"))
@@ -21,6 +23,7 @@ export type Dynamic3DOptions = {
 	Responsiveness: number?,
 	Distance: number?,
 	ExitDuration: number?,
+	FalloffDistance: number?,
 }
 
 local Dynamic3D = {}
@@ -63,8 +66,8 @@ end
 --[[
 	Set(menuFrame, enabled, options, immediate)
 	Enables or disables dynamic 3D cursor tilt on the specified GUI frame.
-	When disabled, smoothly animates the rotation back to flat 0 before unmounting.
-	Preserves full button clickability, hover states, and drag support.
+	Rotates strictly around the GUI frame's center (window-centric pivot),
+	preserving pixel-accurate click hitboxes, toggle clicks, and drag functionality.
 ]]
 function Dynamic3D.Set(menuFrame: GuiObject, enabled: boolean, options: Dynamic3DOptions?, immediate: boolean?)
 	if not menuFrame or typeof(menuFrame) ~= "Instance" or not menuFrame:IsA("GuiObject") then
@@ -109,10 +112,11 @@ function Dynamic3D.Set(menuFrame: GuiObject, enabled: boolean, options: Dynamic3
 	end
 
 	options = options or {}
-	local maxTiltDegrees = options.MaxTiltAngle or 8
+	local maxTiltDegrees = options.MaxTiltAngle or 5 -- 5 degrees optimal for Fluent UX without hitbox drift
 	local maxTiltRad = math.rad(maxTiltDegrees)
-	local responsiveness = options.Responsiveness or 12
+	local responsiveness = options.Responsiveness or 18 -- Snappy 18 for zero-lag cursor tracking
 	local distance = options.Distance or 2
+	local maxFalloff = options.FalloffDistance or 120
 
 	local originalParent = menuFrame.Parent
 	local camera = Workspace.CurrentCamera
@@ -190,8 +194,21 @@ function Dynamic3D.Set(menuFrame: GuiObject, enabled: boolean, options: Dynamic3
 		local frustumWidth = frustumHeight * (vp.X / vp.Y)
 		part.Size = Vector3.new(frustumWidth, frustumHeight, 0.001)
 
-		-- Base CFrame directly in front of camera
-		local baseCFrame = currentCam.CFrame * CFrame.new(0, 0, -distance)
+		local pixelSizeX = frustumWidth / vp.X
+		local pixelSizeY = frustumHeight / vp.Y
+
+		-- 1. Window-relative cursor calculation (relative to menuFrame)
+		local framePos = menuFrame.AbsolutePosition
+		local frameSize = menuFrame.AbsoluteSize
+		local frameHalfW = frameSize.X / 2
+		local frameHalfH = frameSize.Y / 2
+		local frameCenterX = framePos.X + frameHalfW
+		local frameCenterY = framePos.Y + frameHalfH
+
+		-- Local 3D pivot of the window center on the frustum plane
+		local offsetStudsX = (frameCenterX - vp.X / 2) * pixelSizeX
+		local offsetStudsY = (vp.Y / 2 - frameCenterY) * pixelSizeY
+		local pivotLocal = Vector3.new(offsetStudsX, offsetStudsY, -distance)
 
 		if session.Exiting then
 			session.ExitElapsed = session.ExitElapsed + dt
@@ -203,7 +220,9 @@ function Dynamic3D.Set(menuFrame: GuiObject, enabled: boolean, options: Dynamic3
 			session.CurrentRotX = currentRotX
 			session.CurrentRotY = currentRotY
 
-			part.CFrame = baseCFrame * CFrame.Angles(currentRotX, currentRotY, 0)
+			local rotCFrame = CFrame.Angles(currentRotX, currentRotY, 0)
+			local partLocalCFrame = CFrame.new(pivotLocal) * rotCFrame * CFrame.new(-offsetStudsX, -offsetStudsY, 0)
+			part.CFrame = currentCam.CFrame * partLocalCFrame
 
 			if progress >= 1 then
 				cleanupSession(session, menuFrame)
@@ -211,17 +230,40 @@ function Dynamic3D.Set(menuFrame: GuiObject, enabled: boolean, options: Dynamic3
 			return
 		end
 
-		-- Cursor position relative to screen center [-1, 1]
-		local mousePos = UserInputService:GetMouseLocation()
-		local halfW = vp.X / 2
-		local halfH = vp.Y / 2
+		-- Screen cursor with Topbar GuiInset correction
+		local guiInset = GuiService:GetGuiInset()
+		local mousePos = UserInputService:GetMouseLocation() - guiInset
 
-		local normX = math.clamp((mousePos.X - halfW) / (halfW > 0 and halfW or 1), -1, 1)
-		local normY = math.clamp((halfH - mousePos.Y) / (halfH > 0 and halfH or 1), -1, 1)
+		local relX = mousePos.X - frameCenterX
+		local relY = frameCenterY - mousePos.Y
 
-		-- Physical pressure / tilt physics:
+		-- Box SDF: distance from cursor to window bounding box
+		local deltaX = math.max(0, math.abs(mousePos.X - frameCenterX) - frameHalfW)
+		local deltaY = math.max(0, math.abs(mousePos.Y - frameCenterY) - frameHalfH)
+		local distOutside = math.sqrt(deltaX * deltaX + deltaY * deltaY)
+
+		-- Smoothstep falloff outside window
+		local influence = 1
+		if distOutside > 0 then
+			local t = math.clamp(1 - (distOutside / maxFalloff), 0, 1)
+			influence = t * t * (3 - 2 * t)
+		end
+
+		-- Soften tilt when mouse button is held down to prevent drag/toggle accidental jitter
+		if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+			influence = influence * 0.7
+		end
+
+		local normX = 0
+		local normY = 0
+		if frameHalfW > 0 and frameHalfH > 0 then
+			normX = math.clamp(relX / frameHalfW, -1, 1) * influence
+			normY = math.clamp(relY / frameHalfH, -1, 1) * influence
+		end
+
+		-- Tilt physics:
 		-- Cursor moving to the right pushes right edge into the screen (+Y rotation)
-		-- Cursor moving to the top pushes top edge into the screen (-X rotation with inversion)
+		-- Cursor moving to the top pushes top edge into the screen (-X rotation)
 		local targetRotY = normX * maxTiltRad
 		local targetRotX = -normY * maxTiltRad
 
@@ -232,8 +274,10 @@ function Dynamic3D.Set(menuFrame: GuiObject, enabled: boolean, options: Dynamic3
 		session.CurrentRotX = currentRotX
 		session.CurrentRotY = currentRotY
 
-		-- Apply rotated CFrame to the invisible Part
-		part.CFrame = baseCFrame * CFrame.Angles(currentRotX, currentRotY, 0)
+		-- Apply rotated CFrame around the window center pivot
+		local rotCFrame = CFrame.Angles(currentRotX, currentRotY, 0)
+		local partLocalCFrame = CFrame.new(pivotLocal) * rotCFrame * CFrame.new(-offsetStudsX, -offsetStudsY, 0)
+		part.CFrame = currentCam.CFrame * partLocalCFrame
 	end)
 
 	session.Connection = connection

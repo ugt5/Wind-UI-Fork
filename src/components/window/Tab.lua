@@ -2,10 +2,12 @@ local cloneref = (cloneref or clonereference or function(instance)
 	return instance
 end)
 
-local Players = game:GetService("Players")
-
+local Players = cloneref(game:GetService("Players"))
+local TweenService = cloneref(game:GetService("TweenService"))
 local UserInputService = cloneref(game:GetService("UserInputService"))
 local Mouse = Players.LocalPlayer:GetMouse()
+
+local CurrentContainerTween = nil
 
 local Creator = require("../../modules/Creator")
 local New = Creator.New
@@ -590,7 +592,31 @@ function TabModule:OnChange(func)
 end
 
 function TabModule:SelectTab(TabIndex)
-	if not TabModule.Tabs[TabIndex].Locked then
+	if TabModule.Tabs[TabIndex] and not TabModule.Tabs[TabIndex].Locked then
+		local PreviousTabIndex = TabModule.SelectedTab
+		if PreviousTabIndex == TabIndex then
+			return
+		end
+
+		local isMovingDown = true
+		if PreviousTabIndex and TabModule.Tabs[PreviousTabIndex] and TabModule.Tabs[TabIndex] then
+			local prevTab = TabModule.Tabs[PreviousTabIndex]
+			local newTab = TabModule.Tabs[TabIndex]
+			if prevTab.UIElements and prevTab.UIElements.Main and newTab.UIElements and newTab.UIElements.Main then
+				local prevY = prevTab.UIElements.Main.AbsolutePosition.Y
+				local newY = newTab.UIElements.Main.AbsolutePosition.Y
+				if math.abs(newY - prevY) > 2 then
+					isMovingDown = newY > prevY
+				else
+					isMovingDown = TabIndex >= PreviousTabIndex
+				end
+			else
+				isMovingDown = TabIndex >= PreviousTabIndex
+			end
+		end
+
+		local initialAnchorY = isMovingDown and 0.05 or -0.05
+
 		TabModule.SelectedTab = TabIndex
 
 		for _, TabObject in next, TabModule.Tabs do
@@ -633,20 +659,26 @@ function TabModule:SelectTab(TabIndex)
 		end
 		TabModule.Tabs[TabIndex].Selected = true
 
-		task.spawn(function()
-			for _, ContainerObject in next, TabModule.Containers do
-				ContainerObject.AnchorPoint = Vector2.new(0, 0.05)
-				ContainerObject.Visible = false
-			end
-			TabModule.Containers[TabIndex].Visible = true
-			local TweenService = game:GetService("TweenService")
+		if CurrentContainerTween then
+			CurrentContainerTween:Cancel()
+			CurrentContainerTween = nil
+		end
+
+		for _, ContainerObject in next, TabModule.Containers do
+			ContainerObject.Visible = false
+		end
+
+		local targetContainer = TabModule.Containers[TabIndex]
+		if targetContainer then
+			targetContainer.AnchorPoint = Vector2.new(0, initialAnchorY)
+			targetContainer.Visible = true
 
 			local tweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-			local tween = TweenService:Create(TabModule.Containers[TabIndex], tweenInfo, {
+			CurrentContainerTween = TweenService:Create(targetContainer, tweenInfo, {
 				AnchorPoint = Vector2.new(0, 0),
 			})
-			tween:Play()
-		end)
+			CurrentContainerTween:Play()
+		end
 
 		TabModule.OnChangeFunc(TabIndex)
 	end
