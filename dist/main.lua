@@ -4,7 +4,7 @@
     | |/ |/ / / _ \/ _  / /_/ // /  
     |__/|__/_/_//_/\_,_/\____/___/
     
-    v1.6.66  |  2026-10-14  |  Roblox UI Library for scripts
+    v1.6.66  |  2026-10-15  |  Roblox UI Library for scripts
     
     To view the source code, see the `src/` folder on the official GitHub repository.
     
@@ -25700,6 +25700,9 @@ return H
 end
 
 function p.Color3ToHSB(v)
+if not v or typeof(v)~="Color3"then
+return{h=0,s=0,b=0}
+end
 local x,z,A=v.R,v.G,v.B
 local B=math.max(x,z,A)
 local C=math.min(x,z,A)
@@ -25730,6 +25733,9 @@ b=J,
 end
 
 function p.GetPerceivedBrightness(v)
+if not v or typeof(v)~="Color3"then
+return 0
+end
 local x=v.R
 local z=v.G
 local A=v.B
@@ -25737,6 +25743,9 @@ return 0.299*x+0.587*z+0.114*A
 end
 
 function p.GetTextColorForHSB(v,x)
+if not v or typeof(v)~="Color3"then
+return Color3.new(1,1,1)
+end
 local z=p.Color3ToHSB(v)local
 A, B, C=z.h, z.s, z.b
 if p.GetPerceivedBrightness(v)>(x or 0.5)then
@@ -27348,7 +27357,7 @@ Parent=ae.Parent
 or(ah and ah.UIElements and ah.UIElements.Main and ah.UIElements.Main.Main),
 },{
 ab("UICorner",{
-CornerRadius=UDim.new(0,ah.UICorner),
+CornerRadius=UDim.new(0,ah and ah.UICorner or 16),
 }),
 })
 end
@@ -28356,7 +28365,7 @@ Content=af.Content,
 Icon=af.Icon,
 IconThemed=af.IconThemed,
 Thumbnail=af.Thumbnail,
-Buttons=af.Buttons,
+Buttons=af.Buttons or{},
 
 IconSize=22,
 }
@@ -32711,8 +32720,9 @@ local af=aa.New
 local ag={}
 
 function ag.New(ah,ai)
-local aj=af("Frame",{
-Size=ai.ParentType~="Group"and UDim2.new(1,0,0,1)or UDim2.new(0,1,1,0),
+local aj=ai.ParentType~="Group"and ai.ParentType~="HStack"
+local ak=af("Frame",{
+Size=aj and UDim2.new(1,0,0,1)or UDim2.new(0,1,1,0),
 Position=UDim2.new(0.5,0,0.5,0),
 AnchorPoint=Vector2.new(0.5,0.5),
 BackgroundTransparency=.9,
@@ -32720,15 +32730,15 @@ ThemeTag={
 BackgroundColor3="Text"
 }
 })
-local ak=af("Frame",{
+local al=af("Frame",{
 Parent=ai.Parent,
-Size=ai.ParentType~="Group"and UDim2.new(1,-7,0,7)or UDim2.new(0,7,1,-7),
+Size=aj and UDim2.new(1,-7,0,7)or UDim2.new(0,7,1,-7),
 BackgroundTransparency=1,
 },{
-aj
+ak
 })
 
-return"Divider",{__type="Divider",ElementFrame=ak}
+return"Divider",{__type="Divider",ElementFrame=al}
 end
 
 return ag end function a.U()
@@ -33983,7 +33993,7 @@ ar.TopbarFrameModule=az
 
 ag.AddSignal(as:GetPropertyChangedSignal"TextBounds",function()
 if am.Height~=nil then
-at.Size=UDim2.new(1,0,1,am.Title~=nil and-(20+(ar.Padding*2))or nil)
+at.Size=UDim2.new(1,0,1,am.Title~=nil and-(20+(ar.Padding*2))or 0)
 else
 at.Size=
 UDim2.new(1,0,0,(as.TextBounds.Y/(aq or 1))+((ar.Padding+3)*2))
@@ -34109,7 +34119,7 @@ an.Code=ar
 end
 
 function an.Set(aq,ar)
-return an.SetCode(ar)
+return an:SetCode(ar)
 end
 
 function an.Destroy(aq)
@@ -35642,7 +35652,8 @@ d=d-1
 end
 
 if b.ElementFrame then
-b.ElementFrame.Size=UDim2.new(aw,d,1,0)
+local e=b.ElementFrame.Size.Y
+b.ElementFrame.Size=UDim2.new(aw,d,e.Scale,e.Offset)
 end
 end
 end,
@@ -35817,6 +35828,7 @@ CurrentCamera=ap.Camera,
 Active=ap.Interactive,
 },{
 ap.Object,
+ap.Camera,
 }),
 }),
 })
@@ -35940,8 +35952,11 @@ end
 end)
 
 local function FocusCamera()
+if not ap.Object then
+return
+end
 local aw=ap.Object:IsA"BasePart"and ap.Object.Size
-or select(2,ap.Object:GetBoundingBox(0))
+or select(2,ap.Object:GetBoundingBox())
 local ax=math.max(aw.X,aw.Y,aw.Z)
 local ay=ax*2
 local az=ap.Object:GetPivot().Position
@@ -35950,7 +35965,7 @@ ap.Camera.CFrame=
 CFrame.new(az+Vector3.new(0,ax/2,ay),az)
 end
 
-if ap.Focused then
+if ap.Focused and ap.Object then
 FocusCamera()
 end
 
@@ -35987,6 +36002,8 @@ au.CanvasGroup.Viewport.Active=ax
 end
 
 ap.Main=au
+ap.ElementFrame=au
+ap.UIElements={Main=au}
 
 return ap.__type,ap
 end
@@ -36095,14 +36112,16 @@ ax:Destroy()
 
 table.remove(al.AllElements,au.GlobalIndex)
 table.remove(aa.Elements,au.Index)
+if aq and aq==aa then
 table.remove(aq.Elements,au.Index)
+end
 aa:UpdateAllElementShapes(aa)
 end
 end
 
-al.AllElements[au.Index]=aw
+al.AllElements[au.GlobalIndex]=aw
 aa.Elements[au.Index]=aw
-if aq then
+if aq and aq==aa then
 aq.Elements[au.Index]=aw
 end
 
@@ -36718,6 +36737,14 @@ d.Visible=false
 e:Disconnect()
 end)
 end)
+
+if at==1 or ap.SelectedTab==nil then
+task.defer(function()
+if ap.SelectedTab==nil and not as.Locked then
+as:Select()
+end
+end)
+end
 
 return as
 end
@@ -37577,7 +37604,7 @@ Size=ax.Size,
 MinSize=ax.MinSize or Vector2.new(560,350),
 MaxSize=ax.MaxSize or Vector2.new(math.huge,math.huge),
 
-TopBarButtonIconSize=ax.TopBarButtonIconSize,
+TopBarButtonIconSize=ax.TopBarButtonIconSize or 16,
 
 ToggleKey=ax.ToggleKey,
 ElementsRadius=ax.ElementsRadius,
@@ -37810,7 +37837,7 @@ ax.WindUI
 end
 
 ay.UIElements.MainBar=ap("Frame",{
-Size=UDim2.new(1,-ay.UIElements.SideBarContainer.AbsoluteSize.X,1,-ay.Topbar.Height),
+Size=UDim2.new(1,-ay.SideBarWidth,1,-ay.Topbar.Height),
 Position=UDim2.new(1,0,1,0),
 AnchorPoint=Vector2.new(1,1),
 BackgroundTransparency=1,
@@ -37879,7 +37906,7 @@ end
 g=ap("TextButton",{
 Size=UDim2.new(
 0,
-ay.UIElements.SideBarContainer.AbsoluteSize.X-(ay.UIPadding/2),
+ay.SideBarWidth-(ay.UIPadding/2),
 0,
 42+ay.UIPadding
 ),
@@ -38430,7 +38457,11 @@ end)
 end
 
 function ay.CreateTopbarButton(B,C,F,G,H,J,L,M)
-local N=ao.Image(
+H=H or 0
+local N=M or ay.TopBarButtonIconSize or(ay.Topbar.ButtonsType=="Mac"and 9 or 16)
+local O=L or(ay.Topbar.ButtonsType~="Default"and Color3.fromHex"#3b82f6"or nil)
+
+local P=ao.Image(
 F,
 F,
 0,
@@ -38440,31 +38471,31 @@ ay.Topbar.ButtonsType=="Default"and true or false,
 J,
 "WindowTopbarButtonIcon"
 )
-N.Size=ay.Topbar.ButtonsType=="Default"
-and UDim2.new(0,M or ay.TopBarButtonIconSize,0,M or ay.TopBarButtonIconSize)
+P.Size=ay.Topbar.ButtonsType=="Default"
+and UDim2.new(0,N,0,N)
 or UDim2.new(0,0,0,0)
-N.AnchorPoint=Vector2.new(0.5,0.5)
-N.Position=UDim2.new(0.5,0,0.5,0)
-N.ImageLabel.ImageTransparency=ay.Topbar.ButtonsType=="Default"and 0 or 1
+P.AnchorPoint=Vector2.new(0.5,0.5)
+P.Position=UDim2.new(0.5,0,0.5,0)
+P.ImageLabel.ImageTransparency=ay.Topbar.ButtonsType=="Default"and 0 or 1
 
-if ay.Topbar.ButtonsType~="Default"then
-N.ImageLabel.ImageColor3=ao.GetTextColorForHSB(L)
+if ay.Topbar.ButtonsType~="Default"and O then
+P.ImageLabel.ImageColor3=ao.GetTextColorForHSB(O)
 end
 
-local O=ao.NewRoundFrame(
+local Q=ao.NewRoundFrame(
 ay.Topbar.ButtonsType=="Default"and ay.UICorner-(ay.UIPadding/2)or 999,
 "Squircle",
 {
 Size=ay.Topbar.ButtonsType=="Default"
 and UDim2.new(0,ay.Topbar.Height-16,0,ay.Topbar.Height-16)
 or UDim2.new(0,14,0,14),
-LayoutOrder=H or 999,
+LayoutOrder=H,
 
 
 ZIndex=9999,
 AnchorPoint=Vector2.new(0.5,0.5),
 Position=UDim2.new(0.5,0,0.5,0),
-ImageColor3=ay.Topbar.ButtonsType~="Default"and(L or Color3.fromHex"#ff3030")or nil,
+ImageColor3=ay.Topbar.ButtonsType~="Default"and O or nil,
 ThemeTag=ay.Topbar.ButtonsType=="Default"and{
 ImageColor3="Text",
 }or nil,
@@ -38483,7 +38514,7 @@ ImageTransparency=ay.Topbar.ButtonsType=="Default"and 1 or 0,
 
 
 
-N,
+P,
 ap("UIScale",{
 Scale=1,
 }),
@@ -38491,73 +38522,73 @@ Scale=1,
 true
 )
 
-local P=ap("Frame",{
+local R=ap("Frame",{
 Size=ay.Topbar.ButtonsType~="Default"and UDim2.new(0,24,0,24)
 or UDim2.new(0,ay.Topbar.Height-16,0,ay.Topbar.Height-16),
 BackgroundTransparency=1,
 Parent=ay.UIElements.Main.Main.Topbar.Right,
 LayoutOrder=H or 999,
 },{
-O,
+Q,
 })
 
 
 
 ay.TopBarButtons[100-H]={
 Name=C,
-Object=P,
+Object=R,
 }
 
-ao.AddSignal(O.MouseButton1Click,function()
+ao.AddSignal(Q.MouseButton1Click,function()
 if G then
 G()
 end
 end)
-ao.AddSignal(O.MouseEnter,function()
+ao.AddSignal(Q.MouseEnter,function()
 if ay.Topbar.ButtonsType=="Default"then
-aq(O,0.15,{ImageTransparency=0.93}):Play()
+aq(Q,0.15,{ImageTransparency=0.93}):Play()
 
 
 else
 
 aq(
-N.ImageLabel,
+P.ImageLabel,
 0.1,
 {ImageTransparency=0},
 Enum.EasingStyle.Quint,
 Enum.EasingDirection.Out
 ):Play()
-aq(N,0.1,{
+aq(P,0.1,{
 Size=UDim2.new(
 0,
-M or ay.TopBarButtonIconSize,
+N,
 0,
-M or ay.TopBarButtonIconSize
+N
 ),
 },Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
 end
 end)
 
-ao.AddSignal(O.MouseButton1Down,function()
-aq(O.UIScale,0.2,{Scale=0.9},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+ao.AddSignal(Q.MouseButton1Down,function()
+aq(Q.UIScale,0.2,{Scale=0.9},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
 end)
 
-ao.AddSignal(O.MouseLeave,function()
+ao.AddSignal(Q.MouseLeave,function()
 if ay.Topbar.ButtonsType=="Default"then
-aq(O,0.1,{ImageTransparency=1}):Play()
+aq(Q,0.1,{ImageTransparency=1}):Play()
 
 
 else
 
 aq(
-N.ImageLabel,
+P.ImageLabel,
 0.1,
 {ImageTransparency=1},
 Enum.EasingStyle.Quint,
 Enum.EasingDirection.Out
 ):Play()
 aq(
-N,
+P,
 0.1,
 {Size=UDim2.new(0,0,0,0)},
 Enum.EasingStyle.Quint,
@@ -38566,11 +38597,11 @@ Enum.EasingDirection.Out
 end
 end)
 
-ao.AddSignal(O.InputEnded,function()
-aq(O.UIScale,0.2,{Scale=1},Enum.EasingStyle.Quint,Enum.EasingDirection.InOut):Play()
+ao.AddSignal(Q.InputEnded,function()
+aq(Q.UIScale,0.2,{Scale=1},Enum.EasingStyle.Quint,Enum.EasingDirection.InOut):Play()
 end)
 
-return O
+return Q
 end
 
 function ay.Topbar.Button(B,C:{
